@@ -33,6 +33,7 @@ export default function ArticlesPage() {
   const [pagination, setPagination] = useState<ArticlesResponse['pagination'] | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [activeSearchQuery, setActiveSearchQuery] = useState<string>('');
 
   const fetchArticles = async () => {
     try {
@@ -46,8 +47,8 @@ export default function ArticlesPage() {
         params.append('status', statusFilter);
       }
       
-      if (searchQuery) {
-        params.append('search', searchQuery);
+      if (activeSearchQuery.trim()) {
+        params.append('search', activeSearchQuery.trim());
       }
 
       const response = await fetch(`http://localhost:8080/api/v1/articles?${params}`);
@@ -67,12 +68,18 @@ export default function ArticlesPage() {
 
   useEffect(() => {
     fetchArticles();
-  }, [page, statusFilter, searchQuery]);
+  }, [page, statusFilter, activeSearchQuery]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    fetchArticles();
+    setActiveSearchQuery(searchQuery.trim());
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setActiveSearchQuery('');
+    setPage(1);
   };
 
   const formatDate = (dateString: string) => {
@@ -172,13 +179,33 @@ export default function ArticlesPage() {
                   />
                   <button
                     type="submit"
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
                   >
                     検索
                   </button>
+                  {activeSearchQuery.trim() && (
+                    <button
+                      type="button"
+                      onClick={handleClearSearch}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                    >
+                      クリア
+                    </button>
+                  )}
                 </div>
               </form>
             </div>
+
+            {/* 現在の検索条件表示 */}
+            {(activeSearchQuery.trim() || statusFilter) && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-blue-800">
+                  検索条件: 
+                  {activeSearchQuery.trim() && <span className="ml-2 font-medium">「{activeSearchQuery.trim()}」</span>}
+                  {statusFilter && <span className="ml-2 font-medium">ステータス: {getStatusText(statusFilter)}</span>}
+                </p>
+              </div>
+            )}
 
             {/* エラー表示 */}
             {error && (
