@@ -18,6 +18,7 @@ type Router struct {
 	userHandler        *handler.UserHandler
 	authHandler        *handler.AuthHandler
 	articleHandler     *handler.ArticleHandler
+	uploadHandler      *handler.UploadHandler
 	authMiddleware     *middleware.AuthMiddleware
 	validationMiddleware *middleware.ValidationMiddleware
 }
@@ -28,6 +29,7 @@ func NewRouter(
 	userHandler *handler.UserHandler,
 	authHandler *handler.AuthHandler,
 	articleHandler *handler.ArticleHandler,
+	uploadHandler *handler.UploadHandler,
 	authMiddleware *middleware.AuthMiddleware,
 ) *Router {
 	gin.SetMode(config.GinMode)
@@ -46,6 +48,7 @@ func NewRouter(
 		userHandler:        userHandler,
 		authHandler:        authHandler,
 		articleHandler:     articleHandler,
+		uploadHandler:      uploadHandler,
 		authMiddleware:     authMiddleware,
 		validationMiddleware: validationMiddleware,
 	}
@@ -116,6 +119,17 @@ func (r *Router) SetupRoutes() {
 			// 	articlesAuth.POST("/:id/unpublish", r.articleHandler.UnpublishArticle)
 			// }
 		}
+
+		// Upload endpoints
+		upload := v1.Group("/upload")
+		{
+			// Development: Temporarily allow upload without auth for testing
+			upload.POST("/image", r.uploadHandler.UploadImage)
+			upload.DELETE("/image", r.uploadHandler.DeleteImage)
+		}
+
+		// Static file serving for uploaded images
+		v1.GET("/uploads/*path", r.uploadHandler.ServeImage)
 	}
 }
 

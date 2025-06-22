@@ -16,16 +16,18 @@ const (
 
 // Article represents a blog article
 type Article struct {
-	ID          string        `json:"id" db:"id"`
-	Title       string        `json:"title" db:"title"`
-	Content     string        `json:"content" db:"content"`
-	Summary     string        `json:"summary" db:"summary"`
-	Status      ArticleStatus `json:"status" db:"status"`
-	AuthorID    string        `json:"author_id" db:"author_id"`
-	Tags        []string      `json:"tags" db:"tags"`
-	CreatedAt   time.Time     `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time     `json:"updated_at" db:"updated_at"`
-	PublishedAt *time.Time    `json:"published_at" db:"published_at"`
+	ID             string        `json:"id" db:"id"`
+	Title          string        `json:"title" db:"title"`
+	Content        string        `json:"content" db:"content"`
+	Summary        string        `json:"summary" db:"summary"`
+	Status         ArticleStatus `json:"status" db:"status"`
+	AuthorID       string        `json:"author_id" db:"author_id"`
+	Tags           []string      `json:"tags" db:"tags"`
+	FeaturedImage  *string       `json:"featured_image" db:"featured_image"`
+	ThumbnailImage *string       `json:"thumbnail_image" db:"thumbnail_image"`
+	CreatedAt      time.Time     `json:"created_at" db:"created_at"`
+	UpdatedAt      time.Time     `json:"updated_at" db:"updated_at"`
+	PublishedAt    *time.Time    `json:"published_at" db:"published_at"`
 }
 
 // IsPublished returns true if the article is published
@@ -101,4 +103,33 @@ func (a *Article) MarshalTags() ([]byte, error) {
 // UnmarshalTags converts JSON from database to tags slice
 func (a *Article) UnmarshalTags(data []byte) error {
 	return json.Unmarshal(data, &a.Tags)
+}
+
+// SetFeaturedImage sets the featured image path
+func (a *Article) SetFeaturedImage(imagePath string) {
+	a.FeaturedImage = &imagePath
+	a.UpdatedAt = time.Now()
+}
+
+// SetThumbnailImage sets the thumbnail image path
+func (a *Article) SetThumbnailImage(imagePath string) {
+	a.ThumbnailImage = &imagePath
+	a.UpdatedAt = time.Now()
+}
+
+// ClearImages removes all image references
+func (a *Article) ClearImages() {
+	a.FeaturedImage = nil
+	a.ThumbnailImage = nil
+	a.UpdatedAt = time.Now()
+}
+
+// HasFeaturedImage returns true if the article has a featured image
+func (a *Article) HasFeaturedImage() bool {
+	return a.FeaturedImage != nil && *a.FeaturedImage != ""
+}
+
+// HasThumbnailImage returns true if the article has a thumbnail image
+func (a *Article) HasThumbnailImage() bool {
+	return a.ThumbnailImage != nil && *a.ThumbnailImage != ""
 }

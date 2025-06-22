@@ -72,11 +72,12 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 	}
 
 	input := usecase.CreateArticleInput{
-		Title:    createArticleReq.Title,
-		Content:  createArticleReq.Content,
-		Summary:  createArticleReq.Summary,
-		AuthorID: authorIDStr,
-		Tags:     createArticleReq.Tags,
+		Title:         createArticleReq.Title,
+		Content:       createArticleReq.Content,
+		Summary:       createArticleReq.Summary,
+		AuthorID:      authorIDStr,
+		Tags:          createArticleReq.Tags,
+		FeaturedImage: createArticleReq.FeaturedImage,
 	}
 
 	output, err := h.createArticleUseCase.Execute(c.Request.Context(), input)

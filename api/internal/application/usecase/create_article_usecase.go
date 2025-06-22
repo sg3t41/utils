@@ -10,11 +10,12 @@ import (
 )
 
 type CreateArticleInput struct {
-	Title    string   `json:"title" validate:"required,min=1,max=500"`
-	Content  string   `json:"content" validate:"required,min=1"`
-	Summary  string   `json:"summary" validate:"max=1000"`
-	AuthorID string   `json:"author_id" validate:"required"`
-	Tags     []string `json:"tags" validate:"dive,min=1,max=50"`
+	Title         string  `json:"title" validate:"required,min=1,max=500"`
+	Content       string  `json:"content" validate:"required,min=1"`
+	Summary       string  `json:"summary" validate:"max=1000"`
+	AuthorID      string  `json:"author_id" validate:"required"`
+	Tags          []string `json:"tags" validate:"dive,min=1,max=50"`
+	FeaturedImage *string `json:"featured_image" validate:"omitempty,max=500"`
 }
 
 type CreateArticleOutput struct {
@@ -37,15 +38,16 @@ func (uc *CreateArticleUseCase) Execute(ctx context.Context, input CreateArticle
 
 	// Create new article entity
 	article := &entity.Article{
-		ID:        articleID,
-		Title:     input.Title,
-		Content:   input.Content,
-		Summary:   input.Summary,
-		Status:    entity.ArticleStatusDraft, // New articles start as draft
-		AuthorID:  input.AuthorID,
-		Tags:      input.Tags,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:            articleID,
+		Title:         input.Title,
+		Content:       input.Content,
+		Summary:       input.Summary,
+		Status:        entity.ArticleStatusDraft, // New articles start as draft
+		AuthorID:      input.AuthorID,
+		Tags:          input.Tags,
+		FeaturedImage: input.FeaturedImage,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 
 	// Save article to repository

@@ -3,43 +3,48 @@ package dto
 
 // CreateArticleRequest represents the request payload for creating an article
 type CreateArticleRequest struct {
-	Title   string   `json:"title" validate:"required,min=1,max=500"`
-	Content string   `json:"content" validate:"required,min=1"`
-	Summary string   `json:"summary" validate:"max=1000"`
-	Tags    []string `json:"tags" validate:"dive,min=1,max=50"`
+	Title         string  `json:"title" validate:"required,min=1,max=500"`
+	Content       string  `json:"content" validate:"required,min=1"`
+	Summary       string  `json:"summary" validate:"max=1000"`
+	Tags          []string `json:"tags" validate:"dive,min=1,max=50"`
+	FeaturedImage *string `json:"featured_image" validate:"omitempty,max=500"`
 }
 
 // UpdateArticleRequest represents the request payload for updating an article
 type UpdateArticleRequest struct {
-	Title   *string  `json:"title" validate:"omitempty,min=1,max=500"`
-	Content *string  `json:"content" validate:"omitempty,min=1"`
-	Summary *string  `json:"summary" validate:"omitempty,max=1000"`
-	Tags    []string `json:"tags" validate:"dive,min=1,max=50"`
+	Title         *string  `json:"title" validate:"omitempty,min=1,max=500"`
+	Content       *string  `json:"content" validate:"omitempty,min=1"`
+	Summary       *string  `json:"summary" validate:"omitempty,max=1000"`
+	Tags          []string `json:"tags" validate:"dive,min=1,max=50"`
+	FeaturedImage *string  `json:"featured_image" validate:"omitempty,max=500"`
 }
 
 // ArticleResponse represents the response payload for an article
 type ArticleResponse struct {
-	ID          string     `json:"id"`
-	Title       string     `json:"title"`
-	Content     string     `json:"content"`
-	Summary     string     `json:"summary"`
-	Status      string     `json:"status"`
-	AuthorID    string     `json:"author_id"`
-	Tags        []string   `json:"tags"`
-	CreatedAt   string     `json:"created_at"`
-	UpdatedAt   string     `json:"updated_at"`
-	PublishedAt *string    `json:"published_at"`
+	ID             string  `json:"id"`
+	Title          string  `json:"title"`
+	Content        string  `json:"content"`
+	Summary        string  `json:"summary"`
+	Status         string  `json:"status"`
+	AuthorID       string  `json:"author_id"`
+	Tags           []string `json:"tags"`
+	FeaturedImage  *string `json:"featured_image"`
+	ThumbnailImage *string `json:"thumbnail_image"`
+	CreatedAt      string  `json:"created_at"`
+	UpdatedAt      string  `json:"updated_at"`
+	PublishedAt    *string `json:"published_at"`
 }
 
 // ArticleListResponse represents the response payload for article list
 type ArticleListResponse struct {
-	ID          string   `json:"id"`
-	Title       string   `json:"title"`
-	Summary     string   `json:"summary"`
-	Status      string   `json:"status"`
-	Tags        []string `json:"tags"`
-	CreatedAt   string   `json:"created_at"`
-	PublishedAt *string  `json:"published_at"`
+	ID             string  `json:"id"`
+	Title          string  `json:"title"`
+	Summary        string  `json:"summary"`
+	Status         string  `json:"status"`
+	Tags           []string `json:"tags"`
+	ThumbnailImage *string `json:"thumbnail_image"`
+	CreatedAt      string  `json:"created_at"`
+	PublishedAt    *string `json:"published_at"`
 }
 
 // ArticlesResponse represents the paginated response for articles list
@@ -86,6 +91,15 @@ type GetArticleQuery struct {
 // PublishArticleRequest represents the request payload for publishing an article
 type PublishArticleRequest struct {
 	// Empty for now, but can be extended with publish options
+}
+
+// ImageUploadResponse represents the response payload for image upload
+type ImageUploadResponse struct {
+	ImagePath      string `json:"image_path"`
+	ThumbnailPath  string `json:"thumbnail_path"`
+	OriginalName   string `json:"original_name"`
+	Size           int64  `json:"size"`
+	ContentType    string `json:"content_type"`
 }
 
 // Helper functions to convert between DTO and domain objects
