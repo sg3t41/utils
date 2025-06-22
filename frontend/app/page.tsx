@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <div className="min-h-screen grid grid-rows-[auto_1fr_auto] p-8">
@@ -8,13 +10,19 @@ export default function Home() {
       <main className="grid place-items-center">
         <div className="text-center">
           <p className="text-xl mb-4">Welcome to Utils Application</p>
-          <div className="grid gap-4 mt-8">
-            <a
+          <div className="grid gap-4 mt-8 md:grid-cols-2">
+            <Link
               href="/users"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium inline-block"
             >
-              View Users
-            </a>
+              ユーザー管理
+            </Link>
+            <Link
+              href="/articles"
+              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium inline-block"
+            >
+              記事管理
+            </Link>
           </div>
         </div>
       </main>

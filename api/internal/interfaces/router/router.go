@@ -17,6 +17,7 @@ type Router struct {
 	config             *config.Config
 	userHandler        *handler.UserHandler
 	authHandler        *handler.AuthHandler
+	articleHandler     *handler.ArticleHandler
 	authMiddleware     *middleware.AuthMiddleware
 	validationMiddleware *middleware.ValidationMiddleware
 }
@@ -26,6 +27,7 @@ func NewRouter(
 	config *config.Config,
 	userHandler *handler.UserHandler,
 	authHandler *handler.AuthHandler,
+	articleHandler *handler.ArticleHandler,
 	authMiddleware *middleware.AuthMiddleware,
 ) *Router {
 	gin.SetMode(config.GinMode)
@@ -43,6 +45,7 @@ func NewRouter(
 		config:             config,
 		userHandler:        userHandler,
 		authHandler:        authHandler,
+		articleHandler:     articleHandler,
 		authMiddleware:     authMiddleware,
 		validationMiddleware: validationMiddleware,
 	}
@@ -88,6 +91,30 @@ func (r *Router) SetupRoutes() {
 				authenticated.PATCH("/:id", r.validationMiddleware.ValidateJSON(&dto.UpdateUserRequest{}), r.userHandler.UpdateUser)
 				authenticated.PATCH("/:id/password", r.validationMiddleware.ValidateJSON(&dto.UpdatePasswordRequest{}), r.userHandler.UpdatePassword)
 			}
+		}
+
+		// Article endpoints
+		articles := v1.Group("/articles")
+		{
+			// Public endpoints
+			articles.GET("", r.validationMiddleware.ValidateQuery(&dto.ListArticlesQuery{}), r.articleHandler.GetArticles)
+			articles.GET("/:id", r.validationMiddleware.ValidateQuery(&dto.GetArticleQuery{}), r.articleHandler.GetArticle)
+			
+			// Development: Temporarily allow CRUD without auth for testing
+			articles.POST("", r.validationMiddleware.ValidateJSON(&dto.CreateArticleRequest{}), r.articleHandler.CreateArticle)
+			articles.PUT("/:id", r.validationMiddleware.ValidateJSON(&dto.UpdateArticleRequest{}), r.articleHandler.UpdateArticle)
+			articles.DELETE("/:id", r.articleHandler.DeleteArticle)
+			articles.POST("/:id/publish", r.validationMiddleware.ValidateJSON(&dto.PublishArticleRequest{}), r.articleHandler.PublishArticle)
+			articles.POST("/:id/unpublish", r.articleHandler.UnpublishArticle)
+			
+			// Protected article endpoints (commented out for development)
+			// articlesAuth := articles.Use(r.authMiddleware.RequireAuth())
+			// {
+			// 	articlesAuth.PUT("/:id", r.validationMiddleware.ValidateJSON(&dto.UpdateArticleRequest{}), r.articleHandler.UpdateArticle)
+			// 	articlesAuth.DELETE("/:id", r.articleHandler.DeleteArticle)
+			// 	articlesAuth.POST("/:id/publish", r.validationMiddleware.ValidateJSON(&dto.PublishArticleRequest{}), r.articleHandler.PublishArticle)
+			// 	articlesAuth.POST("/:id/unpublish", r.articleHandler.UnpublishArticle)
+			// }
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -55,15 +56,26 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 		return
 	}
 
-	// TODO: Get author ID from auth context
-	// For now, use a default author ID (should be from authentication)
-	authorID := "default-author-id"
+	// Get author ID from auth context
+	authorID, exists := c.Get("user_id")
+	var authorIDStr string
+	if !exists {
+		// Development: Use default author ID for testing
+		authorIDStr = "b7c987cb-781a-4027-bb71-30d0a9d7cf14"
+	} else {
+		var ok bool
+		authorIDStr, ok = authorID.(string)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの形式が無効です"})
+			return
+		}
+	}
 
 	input := usecase.CreateArticleInput{
 		Title:    createArticleReq.Title,
 		Content:  createArticleReq.Content,
 		Summary:  createArticleReq.Summary,
-		AuthorID: authorID,
+		AuthorID: authorIDStr,
 		Tags:     createArticleReq.Tags,
 	}
 

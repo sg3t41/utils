@@ -39,14 +39,17 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: utils_frontend
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8080
       API_URL: http://utils_api:8080
-      NODE_ENV: production
+      NODE_ENV: development
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - api
     networks:

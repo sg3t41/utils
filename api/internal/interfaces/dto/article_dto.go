@@ -1,6 +1,5 @@
 package dto
 
-import "time"
 
 // CreateArticleRequest represents the request payload for creating an article
 type CreateArticleRequest struct {

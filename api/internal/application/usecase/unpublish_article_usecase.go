@@ -53,12 +53,12 @@ func (uc *UnpublishArticleUseCase) Execute(ctx context.Context, input UnpublishA
 	existingArticle.UpdatedAt = time.Now()
 
 	// Save the updated article
-	updatedArticle, err := uc.articleRepo.Update(ctx, existingArticle)
+	err = uc.articleRepo.Update(ctx, existingArticle)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unpublish article: %w", err)
 	}
 
 	return &UnpublishArticleOutput{
-		Article: updatedArticle,
+		Article: existingArticle,
 	}, nil
 }

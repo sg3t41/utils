@@ -15,6 +15,7 @@ var Module = fx.Module("interfaces",
 	fx.Provide(
 		handler.NewUserHandler,
 		handler.NewAuthHandler,
+		handler.NewArticleHandler,
 		middleware.NewAuthMiddleware,
 		fx.Annotate(
 			router.NewRouter,

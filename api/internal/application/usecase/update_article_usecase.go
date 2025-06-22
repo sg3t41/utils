@@ -79,12 +79,12 @@ func (uc *UpdateArticleUseCase) Execute(ctx context.Context, input UpdateArticle
 	existingArticle.UpdatedAt = time.Now()
 
 	// Save the updated article
-	updatedArticle, err := uc.articleRepo.Update(ctx, existingArticle)
+	err = uc.articleRepo.Update(ctx, existingArticle)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update article: %w", err)
 	}
 
 	return &UpdateArticleOutput{
-		Article: updatedArticle,
+		Article: existingArticle,
 	}, nil
 }

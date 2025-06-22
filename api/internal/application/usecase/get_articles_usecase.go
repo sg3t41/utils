@@ -80,26 +80,47 @@ func (uc *GetArticlesUseCase) Execute(ctx context.Context, input GetArticlesInpu
 	}
 
 	// Build filter
+	// Convert status string to ArticleStatus pointer
+	var statusPtr *entity.ArticleStatus
+	if input.Status != "" {
+		status := entity.ArticleStatus(input.Status)
+		statusPtr = &status
+	}
+
+	// Convert time.Time pointers to string pointers
+	var dateFromStr, dateToStr *string
+	if input.DateFrom != nil {
+		dateStr := input.DateFrom.Format("2006-01-02")
+		dateFromStr = &dateStr
+	}
+	if input.DateTo != nil {
+		dateStr := input.DateTo.Format("2006-01-02")
+		dateToStr = &dateStr
+	}
+
+	// Convert tag and search to pointers
+	var tagPtr, searchPtr *string
+	if input.Tag != "" {
+		tagPtr = &input.Tag
+	}
+	if input.Search != "" {
+		searchPtr = &input.Search
+	}
+
 	filter := repository.ArticleFilter{
 		Page:     input.Page,
 		Limit:    input.Limit,
 		Sort:     input.Sort,
 		Order:    input.Order,
-		Status:   input.Status,
-		Tag:      input.Tag,
-		Search:   input.Search,
-		DateFrom: input.DateFrom,
-		DateTo:   input.DateTo,
+		Status:   statusPtr,
+		Tag:      tagPtr,
+		Search:   searchPtr,
+		DateFrom: dateFromStr,
+		DateTo:   dateToStr,
 	}
 
-	// Get articles
-	articles, err := uc.articleRepo.FindAll(ctx, filter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get articles: %w", err)
-	}
-
-	// Get total count
-	total, err := uc.articleRepo.Count(ctx, filter)
+	// Get articles with total count
+	articles, total, err := uc.articleRepo.FindAll(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to count articles: %w", err)
 	}
