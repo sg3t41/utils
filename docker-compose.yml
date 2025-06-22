@@ -1,0 +1,60 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: utils_postgres
+    environment:
+      POSTGRES_DB: utils_db
+      POSTGRES_USER: utils_user
+      POSTGRES_PASSWORD: utils_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    networks:
+      - utils_network
+
+  # Go API Backend
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: utils_api
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: utils_db
+      DB_USER: utils_user
+      DB_PASSWORD: utils_password
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - utils_network
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: utils_frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      API_URL: http://utils_api:8080
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - utils_network
+
+volumes:
+  postgres_data:
+
+networks:
+  utils_network:
+    driver: bridge

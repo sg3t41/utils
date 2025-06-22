@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>usecase: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/sg3t41/api/internal/application/usecase/create_user_usecase.go (100.0%)</option>
+				
+				<option value="file1">github.com/sg3t41/api/internal/application/usecase/delete_user_usecase.go (0.0%)</option>
+				
+				<option value="file2">github.com/sg3t41/api/internal/application/usecase/get_user_usecase.go (100.0%)</option>
+				
+				<option value="file3">github.com/sg3t41/api/internal/application/usecase/get_users_usecase.go (88.9%)</option>
+				
+				<option value="file4">github.com/sg3t41/api/internal/application/usecase/update_password_usecase.go (0.0%)</option>
+				
+				<option value="file5">github.com/sg3t41/api/internal/application/usecase/update_user_usecase.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package usecase
+
+import (
+        "context"
+
+        "github.com/sg3t41/api/internal/domain/entity"
+        "github.com/sg3t41/api/internal/domain/service"
+)
+
+type CreateUserInput struct {
+        Email string
+        Name  string
+}
+
+type CreateUserOutput struct {
+        User *entity.User
+}
+
+type CreateUserUseCase struct {
+        userService *service.UserService
+}
+
+func NewCreateUserUseCase(userService *service.UserService) *CreateUserUseCase <span class="cov8" title="1">{
+        return &amp;CreateUserUseCase{
+                userService: userService,
+        }
+}</span>
+
+func (uc *CreateUserUseCase) Execute(ctx context.Context, input CreateUserInput) (*CreateUserOutput, error) <span class="cov8" title="1">{
+        user, err := uc.userService.CreateUser(ctx, input.Email, input.Name)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;CreateUserOutput{
+                User: user,
+        }, nil</span>
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package usecase
+
+import (
+        "context"
+        "errors"
+
+        "github.com/sg3t41/api/internal/domain/repository"
+)
+
+type DeleteUserUseCase struct {
+        userRepository repository.UserRepository
+}
+
+func NewDeleteUserUseCase(userRepository repository.UserRepository) *DeleteUserUseCase <span class="cov0" title="0">{
+        return &amp;DeleteUserUseCase{
+                userRepository: userRepository,
+        }
+}</span>
+
+type DeleteUserInput struct {
+        ID   string
+        Hard bool
+}
+
+type DeleteUserOutput struct{}
+
+func (uc *DeleteUserUseCase) Execute(ctx context.Context, input DeleteUserInput) (*DeleteUserOutput, error) <span class="cov0" title="0">{
+        if input.ID == "" </span><span class="cov0" title="0">{
+                return nil, errors.New("user ID is required")
+        }</span>
+
+        <span class="cov0" title="0">user, err := uc.userRepository.FindByID(ctx, input.ID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">if user.IsDeleted() </span><span class="cov0" title="0">{
+                return nil, errors.New("user is already deleted")
+        }</span>
+
+        <span class="cov0" title="0">if input.Hard </span><span class="cov0" title="0">{
+                err = uc.userRepository.HardDelete(ctx, input.ID)
+        }</span> else<span class="cov0" title="0"> {
+                err = uc.userRepository.SoftDelete(ctx, input.ID)
+        }</span>
+
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return &amp;DeleteUserOutput{}, nil</span>
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package usecase
+
+import (
+        "context"
+
+        "github.com/sg3t41/api/internal/domain/entity"
+        "github.com/sg3t41/api/internal/domain/service"
+)
+
+type GetUserInput struct {
+        ID string
+}
+
+type GetUserOutput struct {
+        User *entity.User
+}
+
+type GetUserUseCase struct {
+        userService *service.UserService
+}
+
+func NewGetUserUseCase(userService *service.UserService) *GetUserUseCase <span class="cov8" title="1">{
+        return &amp;GetUserUseCase{
+                userService: userService,
+        }
+}</span>
+
+func (uc *GetUserUseCase) Execute(ctx context.Context, input GetUserInput) (*GetUserOutput, error) <span class="cov8" title="1">{
+        user, err := uc.userService.GetUser(ctx, input.ID)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;GetUserOutput{
+                User: user,
+        }, nil</span>
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package usecase
+
+import (
+        "context"
+
+        "github.com/sg3t41/api/internal/domain/entity"
+        "github.com/sg3t41/api/internal/domain/repository"
+)
+
+type GetUsersUseCase struct {
+        userRepository repository.UserRepository
+}
+
+func NewGetUsersUseCase(userRepository repository.UserRepository) *GetUsersUseCase <span class="cov8" title="1">{
+        return &amp;GetUsersUseCase{
+                userRepository: userRepository,
+        }
+}</span>
+
+type GetUsersInput struct {
+        Limit       int
+        Page        int
+        Cursor      string
+        Sort        string
+        Order       string
+        Search      string
+        Status      string
+        CreatedFrom string
+        CreatedTo   string
+        UseCursor   bool
+}
+
+type GetUsersOutput struct {
+        Users []*entity.User
+        Total int
+}
+
+func (uc *GetUsersUseCase) Execute(ctx context.Context, input GetUsersInput) (*GetUsersOutput, error) <span class="cov8" title="1">{
+        if input.Limit == 0 </span><span class="cov8" title="1">{
+                users, err := uc.userRepository.FindAll(ctx)
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+                <span class="cov8" title="1">return &amp;GetUsersOutput{
+                        Users: users,
+                        Total: len(users),
+                }, nil</span>
+        }
+
+        <span class="cov8" title="1">filter := repository.PaginationFilter{
+                Search:      input.Search,
+                Status:      input.Status,
+                CreatedFrom: input.CreatedFrom,
+                CreatedTo:   input.CreatedTo,
+        }
+
+        sort := repository.SortOption{
+                Field: input.Sort,
+                Order: input.Order,
+        }
+
+        if input.UseCursor </span><span class="cov8" title="1">{
+                users, err := uc.userRepository.FindWithCursorPagination(ctx, input.Limit, input.Cursor, filter, sort)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov8" title="1">return &amp;GetUsersOutput{
+                        Users: users,
+                        Total: 0,
+                }, nil</span>
+        }
+
+        <span class="cov8" title="1">offset := (input.Page - 1) * input.Limit
+        result, err := uc.userRepository.FindWithOffsetPagination(ctx, input.Limit, offset, filter, sort)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;GetUsersOutput{
+                Users: result.Users,
+                Total: result.Total,
+        }, nil</span>
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">package usecase
+
+import (
+        "context"
+        "crypto/sha256"
+        "encoding/hex"
+        "errors"
+
+        "github.com/sg3t41/api/internal/domain/repository"
+)
+
+type UpdatePasswordUseCase struct {
+        userRepository repository.UserRepository
+}
+
+func NewUpdatePasswordUseCase(userRepository repository.UserRepository) *UpdatePasswordUseCase <span class="cov0" title="0">{
+        return &amp;UpdatePasswordUseCase{
+                userRepository: userRepository,
+        }
+}</span>
+
+type UpdatePasswordInput struct {
+        UserID          string
+        OldPassword     string
+        NewPassword     string
+        ConfirmPassword string
+}
+
+type UpdatePasswordOutput struct {
+        Success bool
+}
+
+var (
+        ErrInvalidOldPassword    = errors.New("old password is incorrect")
+        ErrPasswordMismatch      = errors.New("new password and confirm password do not match")
+        ErrWeakPassword          = errors.New("password must be at least 8 characters long")
+)
+
+func (uc *UpdatePasswordUseCase) Execute(ctx context.Context, input UpdatePasswordInput) (*UpdatePasswordOutput, error) <span class="cov0" title="0">{
+        if input.NewPassword != input.ConfirmPassword </span><span class="cov0" title="0">{
+                return nil, ErrPasswordMismatch
+        }</span>
+
+        <span class="cov0" title="0">if len(input.NewPassword) &lt; 8 </span><span class="cov0" title="0">{
+                return nil, ErrWeakPassword
+        }</span>
+
+        <span class="cov0" title="0">user, err := uc.userRepository.FindByID(ctx, input.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, ErrUserNotFound
+        }</span>
+
+        <span class="cov0" title="0">if !uc.verifyPassword(input.OldPassword, user.Password) </span><span class="cov0" title="0">{
+                return nil, ErrInvalidOldPassword
+        }</span>
+
+        <span class="cov0" title="0">hashedPassword := uc.hashPassword(input.NewPassword)
+        if err := user.UpdatePassword(hashedPassword); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">err = uc.userRepository.Update(ctx, user)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return &amp;UpdatePasswordOutput{
+                Success: true,
+        }, nil</span>
+}
+
+func (uc *UpdatePasswordUseCase) hashPassword(password string) string <span class="cov0" title="0">{
+        hash := sha256.Sum256([]byte(password))
+        return hex.EncodeToString(hash[:])
+}</span>
+
+func (uc *UpdatePasswordUseCase) verifyPassword(password, hashedPassword string) bool <span class="cov0" title="0">{
+        return uc.hashPassword(password) == hashedPassword
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package usecase
+
+import (
+        "context"
+        "errors"
+
+        "github.com/sg3t41/api/internal/domain/entity"
+        "github.com/sg3t41/api/internal/domain/repository"
+)
+
+type UpdateUserUseCase struct {
+        userRepository repository.UserRepository
+}
+
+func NewUpdateUserUseCase(userRepository repository.UserRepository) *UpdateUserUseCase <span class="cov0" title="0">{
+        return &amp;UpdateUserUseCase{
+                userRepository: userRepository,
+        }
+}</span>
+
+type UpdateUserInput struct {
+        ID      string
+        Name    *string
+        Email   *string
+        Version int
+}
+
+type UpdateUserOutput struct {
+        User *entity.User
+}
+
+var (
+        ErrUserNotFound      = errors.New("user not found")
+        ErrEmailAlreadyTaken = errors.New("email is already taken")
+        ErrVersionConflict   = errors.New("version conflict - user has been updated by another process")
+)
+
+func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput) (*UpdateUserOutput, error) <span class="cov0" title="0">{
+        user, err := uc.userRepository.FindByID(ctx, input.ID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, ErrUserNotFound
+        }</span>
+
+        <span class="cov0" title="0">if user.Version != input.Version </span><span class="cov0" title="0">{
+                return nil, ErrVersionConflict
+        }</span>
+
+        <span class="cov0" title="0">if input.Email != nil &amp;&amp; *input.Email != user.Email </span><span class="cov0" title="0">{
+                existingUser, err := uc.userRepository.FindByEmail(ctx, *input.Email)
+                if err == nil &amp;&amp; existingUser.ID != user.ID </span><span class="cov0" title="0">{
+                        return nil, ErrEmailAlreadyTaken
+                }</span>
+        }
+
+        <span class="cov0" title="0">if err := user.Update(input.Name, input.Email); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">err = uc.userRepository.Update(ctx, user)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return &amp;UpdateUserOutput{
+                User: user,
+        }, nil</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
