@@ -37,25 +37,10 @@ func NewUserHandler(
 }
 
 
-type UserResponse struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	Name      string `json:"name"`
-	Version   int    `json:"version"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-}
 
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	req, exists := c.Get("validated_body")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "バリデーションが実行されていません"})
-		return
-	}
-
-	createUserReq, ok := req.(*dto.CreateUserRequest)
+	createUserReq, ok := GetValidatedBody[dto.CreateUserRequest](c)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "無効なリクエスト形式です"})
 		return
 	}
 
@@ -70,20 +55,13 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, UserResponse{
-		ID:        output.User.ID,
-		Email:     output.User.Email,
-		Name:      output.User.Name,
-		Version:   output.User.Version,
-		CreatedAt: output.User.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		UpdatedAt: output.User.UpdatedAt.Format("2006-01-02T15:04:05Z"),
-	})
+	response := convertUserToResponse(output.User)
+	c.JSON(http.StatusCreated, response)
 }
 
 func (h *UserHandler) GetUser(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+	id, ok := ParseIDParam(c)
+	if !ok {
 		return
 	}
 

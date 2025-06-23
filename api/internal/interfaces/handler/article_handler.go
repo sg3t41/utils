@@ -1,14 +1,11 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sg3t41/api/internal/application/usecase"
-	"github.com/sg3t41/api/internal/domain/entity"
 	"github.com/sg3t41/api/internal/interfaces/dto"
 )
 
@@ -44,15 +41,8 @@ func NewArticleHandler(
 
 // CreateArticle creates a new article
 func (h *ArticleHandler) CreateArticle(c *gin.Context) {
-	req, exists := c.Get("validated_body")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "バリデーションが実行されていません"})
-		return
-	}
-
-	createArticleReq, ok := req.(*dto.CreateArticleRequest)
+	createArticleReq, ok := GetValidatedBody[dto.CreateArticleRequest](c)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "無効なリクエスト形式です"})
 		return
 	}
 
@@ -122,9 +112,8 @@ func (h *ArticleHandler) GetArticles(c *gin.Context) {
 
 // GetArticle retrieves a single article by ID
 func (h *ArticleHandler) GetArticle(c *gin.Context) {
-	id, err := parseArticleIDParam(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "記事IDが無効です"})
+	id, ok := ParseIDParam(c)
+	if !ok {
 		return
 	}
 
@@ -148,21 +137,13 @@ func (h *ArticleHandler) GetArticle(c *gin.Context) {
 
 // UpdateArticle updates an existing article
 func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
-	id, err := parseArticleIDParam(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "記事IDが無効です"})
-		return
-	}
-
-	req, exists := c.Get("validated_body")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "バリデーションが実行されていません"})
-		return
-	}
-
-	updateArticleReq, ok := req.(*dto.UpdateArticleRequest)
+	id, ok := ParseIDParam(c)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "無効なリクエスト形式です"})
+		return
+	}
+
+	updateArticleReq, ok := GetValidatedBody[dto.UpdateArticleRequest](c)
+	if !ok {
 		return
 	}
 
@@ -197,9 +178,8 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 
 // DeleteArticle deletes an article
 func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
-	id, err := parseArticleIDParam(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "記事IDが無効です"})
+	id, ok := ParseIDParam(c)
+	if !ok {
 		return
 	}
 
@@ -222,9 +202,8 @@ func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 
 // PublishArticle publishes an article
 func (h *ArticleHandler) PublishArticle(c *gin.Context) {
-	id, err := parseArticleIDParam(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "記事IDが無効です"})
+	id, ok := ParseIDParam(c)
+	if !ok {
 		return
 	}
 
@@ -248,9 +227,8 @@ func (h *ArticleHandler) PublishArticle(c *gin.Context) {
 
 // UnpublishArticle unpublishes an article
 func (h *ArticleHandler) UnpublishArticle(c *gin.Context) {
-	id, err := parseArticleIDParam(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "記事IDが無効です"})
+	id, ok := ParseIDParam(c)
+	if !ok {
 		return
 	}
 
@@ -272,126 +250,3 @@ func (h *ArticleHandler) UnpublishArticle(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// Helper functions
-
-func convertArticleToResponse(article *entity.Article) *dto.ArticleResponse {
-	var publishedAt *string
-	if article.PublishedAt != nil {
-		published := article.PublishedAt.Format("2006-01-02T15:04:05Z")
-		publishedAt = &published
-	}
-
-	return &dto.ArticleResponse{
-		ID:          article.ID,
-		Title:       article.Title,
-		Content:     article.Content,
-		Summary:     article.Summary,
-		Status:      string(article.Status),
-		Tags:        article.Tags,
-		ArticleImage:       article.ArticleImage,
-		CreatedAt:   article.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		UpdatedAt:   article.UpdatedAt.Format("2006-01-02T15:04:05Z"),
-		PublishedAt: publishedAt,
-	}
-}
-
-func convertArticleToListResponse(article *entity.Article) dto.ArticleListResponse {
-	var publishedAt *string
-	if article.PublishedAt != nil {
-		published := article.PublishedAt.Format("2006-01-02T15:04:05Z")
-		publishedAt = &published
-	}
-
-	return dto.ArticleListResponse{
-		ID:          article.ID,
-		Title:       article.Title,
-		Summary:     article.Summary,
-		Status:      string(article.Status),
-		Tags:        article.Tags,
-		ArticleImage:       article.ArticleImage,
-		CreatedAt:   article.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		PublishedAt: publishedAt,
-	}
-}
-
-func buildArticlesPaginatedResponse(articles []*entity.Article, total int, params dto.ListArticlesQuery) *dto.ArticlesResponse {
-	data := make([]dto.ArticleListResponse, len(articles))
-	for i, article := range articles {
-		data[i] = convertArticleToListResponse(article)
-	}
-
-	if params.Page <= 0 {
-		params.Page = 1
-	}
-	if params.Limit <= 0 {
-		params.Limit = 10
-	}
-
-	totalPages := (total + params.Limit - 1) / params.Limit
-	hasNext := params.Page < totalPages
-	hasPrev := params.Page > 1
-
-	return &dto.ArticlesResponse{
-		Data: data,
-		Pagination: dto.PaginationMeta{
-			Page:       params.Page,
-			Limit:      params.Limit,
-			Total:      total,
-			TotalPages: totalPages,
-			HasNext:    hasNext,
-			HasPrev:    hasPrev,
-		},
-		Meta: dto.SortMeta{
-			Sort:  params.Sort,
-			Order: params.Order,
-		},
-	}
-}
-
-func parseArticleIDParam(c *gin.Context) (string, error) {
-	id := c.Param("id")
-	if id == "" {
-		return "", fmt.Errorf("missing article ID")
-	}
-	return id, nil
-}
-
-func parseArticleQueryParams(c *gin.Context) dto.ListArticlesQuery {
-	params := dto.ListArticlesQuery{}
-
-	if page := c.Query("page"); page != "" {
-		if p, err := strconv.Atoi(page); err == nil {
-			params.Page = p
-		}
-	}
-
-	if limit := c.Query("limit"); limit != "" {
-		if l, err := strconv.Atoi(limit); err == nil {
-			params.Limit = l
-		}
-	}
-
-	params.Sort = c.Query("sort")
-	params.Order = c.Query("order")
-	params.Status = c.Query("status")
-	params.Tag = c.Query("tag")
-	params.Search = c.Query("search")
-	params.DateFrom = c.Query("date_from")
-	params.DateTo = c.Query("date_to")
-
-	// Set defaults
-	if params.Page <= 0 {
-		params.Page = 1
-	}
-	if params.Limit <= 0 {
-		params.Limit = 10
-	}
-	if params.Sort == "" {
-		params.Sort = "created_at"
-	}
-	if params.Order == "" {
-		params.Order = "desc"
-	}
-
-	return params
-}

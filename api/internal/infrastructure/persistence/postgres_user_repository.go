@@ -203,8 +203,8 @@ func (r *PostgresUserRepository) FindWithOffsetPagination(ctx context.Context, l
 	baseQuery := "SELECT id, name, email, created_at, updated_at FROM users"
 	countQuery := "SELECT COUNT(*) FROM users"
 	
-	whereClause, args := r.buildWhereClause(filter)
-	orderClause := r.buildOrderClause(sort)
+	whereClause, args := buildWhereClause(filter)
+	orderClause := buildOrderClause(sort)
 	
 	if whereClause != "" {
 		baseQuery += " WHERE " + whereClause
@@ -251,7 +251,7 @@ func (r *PostgresUserRepository) FindWithOffsetPagination(ctx context.Context, l
 func (r *PostgresUserRepository) FindWithCursorPagination(ctx context.Context, limit int, cursor string, filter repository.PaginationFilter, sort repository.SortOption) ([]*entity.User, error) {
 	baseQuery := "SELECT id, name, email, created_at, updated_at FROM users"
 	
-	whereClause, args := r.buildWhereClause(filter)
+	whereClause, args := buildWhereClause(filter)
 	
 	if cursor != "" {
 		if whereClause != "" {
@@ -266,7 +266,7 @@ func (r *PostgresUserRepository) FindWithCursorPagination(ctx context.Context, l
 		baseQuery += " WHERE " + whereClause
 	}
 	
-	orderClause := r.buildOrderClause(sort)
+	orderClause := buildOrderClause(sort)
 	baseQuery += orderClause + " LIMIT $" + fmt.Sprintf("%d", len(args)+1)
 	args = append(args, limit+1)
 	
@@ -295,59 +295,6 @@ func (r *PostgresUserRepository) FindWithCursorPagination(ctx context.Context, l
 	return users, rows.Err()
 }
 
-func (r *PostgresUserRepository) buildWhereClause(filter repository.PaginationFilter) (string, []interface{}) {
-	var conditions []string
-	var args []interface{}
-	argIndex := 1
-	
-	if filter.Search != "" {
-		conditions = append(conditions, fmt.Sprintf("(name ILIKE $%d OR email ILIKE $%d)", argIndex, argIndex+1))
-		searchPattern := "%" + filter.Search + "%"
-		args = append(args, searchPattern, searchPattern)
-		argIndex += 2
-	}
-	
-	if filter.Status != "" {
-		switch filter.Status {
-		case "active":
-			conditions = append(conditions, "deleted_at IS NULL")
-		case "deleted":
-			conditions = append(conditions, "deleted_at IS NOT NULL")
-		}
-	}
-	
-	if filter.CreatedFrom != "" {
-		conditions = append(conditions, fmt.Sprintf("created_at >= $%d", argIndex))
-		args = append(args, filter.CreatedFrom)
-		argIndex++
-	}
-	
-	if filter.CreatedTo != "" {
-		conditions = append(conditions, fmt.Sprintf("created_at <= $%d", argIndex))
-		args = append(args, filter.CreatedTo)
-		argIndex++
-	}
-	
-	return strings.Join(conditions, " AND "), args
-}
-
-func (r *PostgresUserRepository) buildOrderClause(sort repository.SortOption) string {
-	if sort.Field == "" {
-		return " ORDER BY created_at DESC"
-	}
-	
-	field := sort.Field
-	if field != "id" && field != "name" && field != "email" && field != "created_at" && field != "updated_at" {
-		field = "created_at"
-	}
-	
-	order := sort.Order
-	if order != "asc" && order != "desc" {
-		order = "desc"
-	}
-	
-	return fmt.Sprintf(" ORDER BY %s %s", field, strings.ToUpper(order))
-}
 
 func (r *PostgresUserRepository) SoftDelete(ctx context.Context, id string) error {
 	query := `
