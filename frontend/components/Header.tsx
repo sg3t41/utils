@@ -58,12 +58,6 @@ export default function Header() {
             記事一覧
           </Link>
           
-          {!isAuthenticated && (
-            <span className="text-sm text-gray-500 italic">
-              閲覧専用モード
-            </span>
-          )}
-          
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -75,8 +69,7 @@ export default function Header() {
                   />
                 )}
                 <span className="text-sm text-gray-700">
-                  {user?.name}
-                  {isAdmin && <span className="ml-1 text-blue-600 font-semibold">(管理者)</span>}
+                  {user?.name}でログイン中
                 </span>
               </div>
               <button
@@ -91,7 +84,7 @@ export default function Header() {
               onClick={handleLineLogin}
               className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium"
             >
-              管理者ログイン
+              LINEでログイン
             </button>
           )}
         </nav>
