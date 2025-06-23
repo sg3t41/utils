@@ -20,5 +20,6 @@ var Module = fx.Module("application",
 		usecase.NewDeleteArticleUseCase,
 		usecase.NewPublishArticleUseCase,
 		usecase.NewUnpublishArticleUseCase,
+		usecase.NewCreateLineUserUseCase,
 	),
 )

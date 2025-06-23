@@ -19,6 +19,7 @@ type Router struct {
 	authHandler        *handler.AuthHandler
 	articleHandler     *handler.ArticleHandler
 	uploadHandler      *handler.UploadHandler
+	lineHandler        *handler.LineHandler
 	authMiddleware     *middleware.AuthMiddleware
 	validationMiddleware *middleware.ValidationMiddleware
 }
@@ -30,6 +31,7 @@ func NewRouter(
 	authHandler *handler.AuthHandler,
 	articleHandler *handler.ArticleHandler,
 	uploadHandler *handler.UploadHandler,
+	lineHandler *handler.LineHandler,
 	authMiddleware *middleware.AuthMiddleware,
 ) *Router {
 	gin.SetMode(config.GinMode)
@@ -49,6 +51,7 @@ func NewRouter(
 		authHandler:        authHandler,
 		articleHandler:     articleHandler,
 		uploadHandler:      uploadHandler,
+		lineHandler:        lineHandler,
 		authMiddleware:     authMiddleware,
 		validationMiddleware: validationMiddleware,
 	}
@@ -71,6 +74,13 @@ func (r *Router) SetupRoutes() {
 			auth.POST("/login", r.authHandler.Login)
 			auth.POST("/refresh", r.authHandler.RefreshToken)
 			auth.POST("/logout", r.authHandler.Logout)
+			
+			// LINE認証エンドポイント
+			line := auth.Group("/line")
+			{
+				line.GET("/url", r.lineHandler.GetAuthURL)
+				line.POST("/callback", r.lineHandler.CallbackPost)
+			}
 			
 			// Protected auth endpoints
 			authProtected := auth.Use(r.authMiddleware.RequireAuth())

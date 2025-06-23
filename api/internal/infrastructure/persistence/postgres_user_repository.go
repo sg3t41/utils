@@ -23,10 +23,10 @@ func NewPostgresUserRepository(db *sql.DB) repository.UserRepository {
 
 func (r *PostgresUserRepository) Create(ctx context.Context, user *entity.User) error {
 	query := `
-		INSERT INTO users (id, name, email, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO users (id, name, email, line_user_id, profile_image, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-	_, err := r.db.ExecContext(ctx, query, user.ID, user.Name, user.Email, user.CreatedAt, user.UpdatedAt)
+	_, err := r.db.ExecContext(ctx, query, user.ID, user.Name, user.Email, user.LineUserID, user.ProfileImage, user.CreatedAt, user.UpdatedAt)
 	return err
 }
 
@@ -64,6 +64,31 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) 
 		&user.ID,
 		&user.Name,
 		&user.Email,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *PostgresUserRepository) FindByLineUserID(ctx context.Context, lineUserID string) (*entity.User, error) {
+	query := `
+		SELECT id, name, email, line_user_id, profile_image, created_at, updated_at
+		FROM users
+		WHERE line_user_id = $1
+	`
+	var user entity.User
+	err := r.db.QueryRowContext(ctx, query, lineUserID).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.LineUserID,
+		&user.ProfileImage,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)

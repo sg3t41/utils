@@ -8,14 +8,16 @@ import (
 )
 
 type User struct {
-	ID        string
-	Email     string
-	Name      string
-	Password  string
-	Version   int
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
+	ID           string
+	Email        string
+	Name         string
+	Password     string
+	LineUserID   string
+	ProfileImage string
+	Version      int
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	DeletedAt    *time.Time
 }
 
 func NewUser(email, name string) (*User, error) {
@@ -34,6 +36,26 @@ func NewUser(email, name string) (*User, error) {
 		Version:   1,
 		CreatedAt: now,
 		UpdatedAt: now,
+	}, nil
+}
+
+func NewLineUser(lineUserID, name, profileImage string) (*User, error) {
+	if lineUserID == "" {
+		return nil, errors.New("line user ID is required")
+	}
+	if name == "" {
+		return nil, errors.New("name is required")
+	}
+
+	now := time.Now()
+	return &User{
+		ID:           uuid.New().String(),
+		LineUserID:   lineUserID,
+		Name:         name,
+		ProfileImage: profileImage,
+		Version:      1,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}, nil
 }
 

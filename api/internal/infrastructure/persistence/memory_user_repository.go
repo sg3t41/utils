@@ -62,6 +62,19 @@ func (r *MemoryUserRepository) FindByEmail(ctx context.Context, email string) (*
 	return user, nil
 }
 
+func (r *MemoryUserRepository) FindByLineUserID(ctx context.Context, lineUserID string) (*entity.User, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, user := range r.users {
+		if user.LineUserID == lineUserID {
+			return user, nil
+		}
+	}
+
+	return nil, errors.New("user not found")
+}
+
 func (r *MemoryUserRepository) Update(ctx context.Context, user *entity.User) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

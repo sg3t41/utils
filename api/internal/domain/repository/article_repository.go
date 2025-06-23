@@ -29,14 +29,11 @@ type ArticleRepository interface {
 	// FindByTag finds articles that have a specific tag
 	FindByTag(ctx context.Context, tag string, limit, offset int) ([]*entity.Article, int, error)
 
-	// FindByAuthor finds articles by author ID
-	FindByAuthor(ctx context.Context, authorID string, limit, offset int) ([]*entity.Article, int, error)
 }
 
 // ArticleFilter represents filtering options for article queries
 type ArticleFilter struct {
 	Status     *entity.ArticleStatus `json:"status"`
-	AuthorID   *string               `json:"author_id"`
 	Tag        *string               `json:"tag"`
 	Search     *string               `json:"search"`     // Search in title and content
 	Page       int                   `json:"page"`

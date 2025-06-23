@@ -21,7 +21,6 @@ type Article struct {
 	Content        string        `json:"content" db:"content"`
 	Summary        string        `json:"summary" db:"summary"`
 	Status         ArticleStatus `json:"status" db:"status"`
-	AuthorID       string        `json:"author_id" db:"author_id"`
 	Tags           []string      `json:"tags" db:"tags"`
 	ArticleImage   *string       `json:"article_image" db:"article_image"`
 	CreatedAt      time.Time     `json:"created_at" db:"created_at"`

@@ -30,6 +30,31 @@ func NewAuthenticationService(
 	}
 }
 
+// LINEログイン用のトークン生成
+func (s *AuthenticationService) GenerateTokensForUser(ctx context.Context, user *entity.User, ipAddress, userAgent string) (*entity.TokenPair, error) {
+	// Generate access token
+	accessToken, err := s.tokenService.GenerateAccessToken(user, []string{"user"})
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate access token: %w", err)
+	}
+
+	// Generate refresh token
+	tokenFamily := uuid.New().String()
+	refreshToken, err := s.tokenService.GenerateRefreshToken(user.ID, tokenFamily)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+
+	// Note: Session storage is optional for LINE login
+	// For now, we'll skip session storage to avoid complications
+
+	return &entity.TokenPair{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresIn:    int64(30 * time.Minute / time.Second), // 30 minutes
+	}, nil
+}
+
 func (s *AuthenticationService) Login(ctx context.Context, req *entity.LoginRequest, ipAddress, userAgent string) (*entity.TokenPair, error) {
 	// Rate limiting check
 	rateLimitKey := fmt.Sprintf("login_attempts:%s", ipAddress)

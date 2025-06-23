@@ -8,31 +8,37 @@ import (
 
 // UserResponse はユーザー情報のレスポンス用DTO
 type UserResponse struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	Name      string `json:"name"`
-	Version   int    `json:"version"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID           string `json:"id"`
+	Email        string `json:"email"`
+	Name         string `json:"name"`
+	LineUserID   string `json:"line_user_id,omitempty"`
+	ProfileImage string `json:"profile_image,omitempty"`
+	Version      int    `json:"version"`
+	CreatedAt    string `json:"created_at"`
+	UpdatedAt    string `json:"updated_at"`
 }
 
 // ToUserResponse はUserエンティティをUserResponseに変換する
 func ToUserResponse(user *entity.User) UserResponse {
 	return UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		Version:   user.Version,
-		CreatedAt: user.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
+		ID:           user.ID,
+		Email:        user.Email,
+		Name:         user.Name,
+		LineUserID:   user.LineUserID,
+		ProfileImage: user.ProfileImage,
+		Version:      user.Version,
+		CreatedAt:    user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:    user.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
 // CreateUserRequest はユーザー作成リクエスト用DTO
 type CreateUserRequest struct {
-	Email    string `json:"email" validate:"required,email,max=255"`
-	Name     string `json:"name" validate:"required,max=100"`
-	Password string `json:"password" validate:"required,min=8,max=255"`
+	Email        string `json:"email" validate:"required,email,max=255"`
+	Name         string `json:"name" validate:"required,max=100"`
+	Password     string `json:"password" validate:"required,min=8,max=255"`
+	LineUserID   string `json:"line_user_id,omitempty"`
+	ProfileImage string `json:"profile_image,omitempty"`
 }
 
 // UpdateUserRequest はユーザー更新リクエスト用DTO

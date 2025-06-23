@@ -56,20 +56,6 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 		return
 	}
 
-	// Get author ID from auth context
-	authorID, exists := c.Get("user_id")
-	var authorIDStr string
-	if !exists {
-		// Development: Use default author ID for testing
-		authorIDStr = "b7c987cb-781a-4027-bb71-30d0a9d7cf14"
-	} else {
-		var ok bool
-		authorIDStr, ok = authorID.(string)
-		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの形式が無効です"})
-			return
-		}
-	}
 
 	// Convert empty strings to nil for optional fields
 	var articleImage *string
@@ -81,7 +67,6 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 		Title:    createArticleReq.Title,
 		Content:  createArticleReq.Content,
 		Summary:  createArticleReq.Summary,
-		AuthorID: authorIDStr,
 		Tags:     createArticleReq.Tags,
 		ArticleImage:    articleImage,
 	}
@@ -302,7 +287,6 @@ func convertArticleToResponse(article *entity.Article) *dto.ArticleResponse {
 		Content:     article.Content,
 		Summary:     article.Summary,
 		Status:      string(article.Status),
-		AuthorID:    article.AuthorID,
 		Tags:        article.Tags,
 		ArticleImage:       article.ArticleImage,
 		CreatedAt:   article.CreatedAt.Format("2006-01-02T15:04:05Z"),

@@ -26,8 +26,8 @@ func (r *PostgresArticleRepository) Create(ctx context.Context, article *entity.
 	}
 
 	query := `
-		INSERT INTO articles (id, title, content, summary, status, author_id, tags, article_image, created_at, updated_at, published_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		INSERT INTO articles (id, title, content, summary, status, tags, article_image, created_at, updated_at, published_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`
 
 	_, err = r.db.ExecContext(ctx, query,
@@ -36,7 +36,6 @@ func (r *PostgresArticleRepository) Create(ctx context.Context, article *entity.
 		article.Content,
 		article.Summary,
 		article.Status,
-		article.AuthorID,
 		tagsJSON,
 		article.ArticleImage,
 		article.CreatedAt,
@@ -53,7 +52,7 @@ func (r *PostgresArticleRepository) Create(ctx context.Context, article *entity.
 
 func (r *PostgresArticleRepository) FindByID(ctx context.Context, id string) (*entity.Article, error) {
 	query := `
-		SELECT id, title, content, summary, status, author_id, tags, article_image, created_at, updated_at, published_at
+		SELECT id, title, content, summary, status, tags, article_image, created_at, updated_at, published_at
 		FROM articles
 		WHERE id = $1
 	`
@@ -69,7 +68,6 @@ func (r *PostgresArticleRepository) FindByID(ctx context.Context, id string) (*e
 		&article.Content,
 		&article.Summary,
 		&article.Status,
-		&article.AuthorID,
 		&tagsJSON,
 		&article.ArticleImage,
 		&article.CreatedAt,
@@ -103,11 +101,6 @@ func (r *PostgresArticleRepository) FindAll(ctx context.Context, filter reposito
 		argIndex++
 	}
 
-	if filter.AuthorID != nil {
-		conditions = append(conditions, fmt.Sprintf("author_id = $%d", argIndex))
-		args = append(args, *filter.AuthorID)
-		argIndex++
-	}
 
 	if filter.Tag != nil {
 		conditions = append(conditions, fmt.Sprintf("tags @> $%d", argIndex))
@@ -150,7 +143,7 @@ func (r *PostgresArticleRepository) FindAll(ctx context.Context, filter reposito
 
 	// Build main query with pagination and sorting
 	query := fmt.Sprintf(`
-		SELECT id, title, content, summary, status, author_id, tags, article_image, created_at, updated_at, published_at
+		SELECT id, title, content, summary, status, tags, article_image, created_at, updated_at, published_at
 		FROM articles
 		%s
 		ORDER BY %s %s
@@ -176,7 +169,6 @@ func (r *PostgresArticleRepository) FindAll(ctx context.Context, filter reposito
 			&article.Content,
 			&article.Summary,
 			&article.Status,
-			&article.AuthorID,
 			&tagsJSON,
 			&article.ArticleImage,
 			&article.CreatedAt,
@@ -279,11 +271,3 @@ func (r *PostgresArticleRepository) FindByTag(ctx context.Context, tag string, l
 	return r.FindAll(ctx, filter)
 }
 
-func (r *PostgresArticleRepository) FindByAuthor(ctx context.Context, authorID string, limit, offset int) ([]*entity.Article, int, error) {
-	filter := repository.ArticleFilter{
-		AuthorID: &authorID,
-		Limit:    limit,
-		Page:     (offset / limit) + 1,
-	}
-	return r.FindAll(ctx, filter)
-}

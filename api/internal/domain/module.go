@@ -15,6 +15,7 @@ import (
 var Module = fx.Module("domain",
 	fx.Provide(
 		service.NewUserService,
+		service.NewAuthenticationService, // 具体的な型として提供
 		fx.Annotate(
 			service.NewAuthenticationService,
 			fx.As(new(repository.AuthService)),

@@ -26,7 +26,6 @@ type ArticleResponse struct {
 	Content     string   `json:"content"`
 	Summary     string   `json:"summary"`
 	Status      string   `json:"status"`
-	AuthorID    string   `json:"author_id"`
 	Tags        []string `json:"tags"`
 	ArticleImage       *string  `json:"article_image"`
 	CreatedAt   string   `json:"created_at"`
@@ -104,7 +103,7 @@ type ImageUploadResponse struct {
 // Helper functions to convert between DTO and domain objects
 
 // ToCreateArticleInput converts CreateArticleRequest to usecase input
-func (req *CreateArticleRequest) ToCreateArticleInput(authorID string) interface{} {
+func (req *CreateArticleRequest) ToCreateArticleInput() interface{} {
 	// This will be implemented when we create the specific usecase input type
 	return nil
 }

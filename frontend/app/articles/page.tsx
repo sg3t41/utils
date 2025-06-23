@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Header from '../../components/Header';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Article {
   id: string;
@@ -27,6 +29,7 @@ interface ArticlesResponse {
 }
 
 export default function ArticlesPage() {
+  const { isAuthenticated } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +92,7 @@ export default function ArticlesPage() {
     setPage(1);
   };
 
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
       year: 'numeric',
@@ -138,8 +142,10 @@ export default function ArticlesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="py-8">
+        <div className="max-w-6xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="grid gap-6">
             {/* ヘッダー */}
@@ -317,6 +323,7 @@ export default function ArticlesPage() {
               </div>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>
