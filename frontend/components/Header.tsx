@@ -69,7 +69,7 @@ export default function Header() {
                   />
                 )}
                 <span className="text-sm text-gray-700">
-                  {user?.name}でログイン中
+                  {user?.name}
                 </span>
               </div>
               <button
@@ -84,7 +84,7 @@ export default function Header() {
               onClick={handleLineLogin}
               className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium"
             >
-              LINEでログイン
+              ログイン
             </button>
           )}
         </nav>
