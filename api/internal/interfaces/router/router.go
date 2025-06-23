@@ -21,6 +21,7 @@ type Router struct {
 	uploadHandler      *handler.UploadHandler
 	lineHandler        *handler.LineHandler
 	authMiddleware     *middleware.AuthMiddleware
+	adminMiddleware    *middleware.AdminMiddleware
 	validationMiddleware *middleware.ValidationMiddleware
 }
 
@@ -33,6 +34,7 @@ func NewRouter(
 	uploadHandler *handler.UploadHandler,
 	lineHandler *handler.LineHandler,
 	authMiddleware *middleware.AuthMiddleware,
+	adminMiddleware *middleware.AdminMiddleware,
 ) *Router {
 	gin.SetMode(config.GinMode)
 	engine := gin.New()
@@ -53,6 +55,7 @@ func NewRouter(
 		uploadHandler:      uploadHandler,
 		lineHandler:        lineHandler,
 		authMiddleware:     authMiddleware,
+		adminMiddleware:    adminMiddleware,
 		validationMiddleware: validationMiddleware,
 	}
 }
@@ -113,12 +116,15 @@ func (r *Router) SetupRoutes() {
 			articles.GET("", r.validationMiddleware.ValidateQuery(&dto.ListArticlesQuery{}), r.articleHandler.GetArticles)
 			articles.GET("/:id", r.validationMiddleware.ValidateQuery(&dto.GetArticleQuery{}), r.articleHandler.GetArticle)
 			
-			// Development: Temporarily allow CRUD without auth for testing
-			articles.POST("", r.validationMiddleware.ValidateJSON(&dto.CreateArticleRequest{}), r.articleHandler.CreateArticle)
-			articles.PUT("/:id", r.validationMiddleware.ValidateJSON(&dto.UpdateArticleRequest{}), r.articleHandler.UpdateArticle)
-			articles.DELETE("/:id", r.articleHandler.DeleteArticle)
-			articles.POST("/:id/publish", r.validationMiddleware.ValidateJSON(&dto.PublishArticleRequest{}), r.articleHandler.PublishArticle)
-			articles.POST("/:id/unpublish", r.articleHandler.UnpublishArticle)
+			// Admin-only endpoints (st user only)
+			articlesAdmin := articles.Use(r.adminMiddleware.RequireAdmin())
+			{
+				articlesAdmin.POST("", r.validationMiddleware.ValidateJSON(&dto.CreateArticleRequest{}), r.articleHandler.CreateArticle)
+				articlesAdmin.PUT("/:id", r.validationMiddleware.ValidateJSON(&dto.UpdateArticleRequest{}), r.articleHandler.UpdateArticle)
+				articlesAdmin.DELETE("/:id", r.articleHandler.DeleteArticle)
+				articlesAdmin.POST("/:id/publish", r.validationMiddleware.ValidateJSON(&dto.PublishArticleRequest{}), r.articleHandler.PublishArticle)
+				articlesAdmin.POST("/:id/unpublish", r.articleHandler.UnpublishArticle)
+			}
 			
 			// Protected article endpoints (commented out for development)
 			// articlesAuth := articles.Use(r.authMiddleware.RequireAuth())
@@ -130,10 +136,10 @@ func (r *Router) SetupRoutes() {
 			// }
 		}
 
-		// Upload endpoints
+		// Upload endpoints (admin only)
 		upload := v1.Group("/upload")
+		upload.Use(r.adminMiddleware.RequireAdmin())
 		{
-			// Development: Temporarily allow upload without auth for testing
 			upload.POST("/image", r.uploadHandler.UploadImage)
 			upload.DELETE("/image", r.uploadHandler.DeleteImage)
 		}

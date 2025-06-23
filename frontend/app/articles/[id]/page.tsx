@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface Article {
   id: string;
@@ -23,6 +24,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 export default function ArticleDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { isAdmin } = useAuth();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -235,42 +237,46 @@ export default function ArticleDetailPage() {
                   >
                     一覧に戻る
                   </Link>
-                  <Link
-                    href={`/articles/${article.id}/edit`}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium inline-block"
-                  >
-                    編集
-                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href={`/articles/${article.id}/edit`}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium inline-block"
+                    >
+                      編集
+                    </Link>
+                  )}
                 </div>
               </div>
 
               {/* アクションボタン */}
-              <div className="flex gap-2">
-                {article.status === 'draft' ? (
+              {isAdmin && (
+                <div className="flex gap-2">
+                  {article.status === 'draft' ? (
+                    <button
+                      onClick={handlePublish}
+                      disabled={actionLoading === 'publish'}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                    >
+                      {actionLoading === 'publish' ? '公開中...' : '公開する'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleUnpublish}
+                      disabled={actionLoading === 'unpublish'}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                    >
+                      {actionLoading === 'unpublish' ? '処理中...' : '下書きに戻す'}
+                    </button>
+                  )}
                   <button
-                    onClick={handlePublish}
-                    disabled={actionLoading === 'publish'}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                    onClick={handleDelete}
+                    disabled={actionLoading === 'delete'}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
                   >
-                    {actionLoading === 'publish' ? '公開中...' : '公開する'}
+                    {actionLoading === 'delete' ? '削除中...' : '削除'}
                   </button>
-                ) : (
-                  <button
-                    onClick={handleUnpublish}
-                    disabled={actionLoading === 'unpublish'}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
-                  >
-                    {actionLoading === 'unpublish' ? '処理中...' : '下書きに戻す'}
-                  </button>
-                )}
-                <button
-                  onClick={handleDelete}
-                  disabled={actionLoading === 'delete'}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
-                >
-                  {actionLoading === 'delete' ? '削除中...' : '削除'}
-                </button>
-              </div>
+                </div>
+              )}
 
               {/* メタ情報 */}
               <div className="grid gap-2 text-sm text-gray-600">

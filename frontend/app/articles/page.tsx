@@ -29,7 +29,7 @@ interface ArticlesResponse {
 }
 
 export default function ArticlesPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -151,12 +151,14 @@ export default function ArticlesPage() {
             {/* ヘッダー */}
             <div className="flex justify-between items-center">
               <h1 className="text-3xl font-bold text-gray-900">記事一覧</h1>
-              <Link
-                href="/articles/new"
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium inline-block"
-              >
-                新規作成
-              </Link>
+              {isAdmin && (
+                <Link
+                  href="/articles/new"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium inline-block"
+                >
+                  新規作成
+                </Link>
+              )}
             </div>
 
             {/* フィルターと検索 */}

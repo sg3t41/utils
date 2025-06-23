@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (accessToken: string, refreshToken: string, user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const isAuthenticated = !!user && !!accessToken;
+  const isAdmin = isAuthenticated && user?.name === 'st';
 
   const value: AuthContextType = {
     user,
@@ -87,6 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     logout,
     isAuthenticated,
+    isAdmin,
   };
 
   return (
