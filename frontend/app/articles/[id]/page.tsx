@@ -204,13 +204,13 @@ export default function ArticleDetailPage() {
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {/* ヘッダー画像 */}
           {article.article_image && (
-            <div className="w-full h-64 md:h-96">
+            <div className="w-full h-64 md:h-96 bg-gray-100">
               <img
                 src={mounted ? `${API_BASE_URL}/api/v1/uploads/${article.article_image}` : ''}
                 alt={article.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement.style.display = 'none';
                 }}
               />
             </div>

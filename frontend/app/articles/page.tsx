@@ -233,19 +233,20 @@ export default function ArticlesPage() {
                     key={article.id}
                     className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                   >
-                    <div className="flex gap-4">
-                      {article.article_image && (
-                        <div className="w-40 h-28 flex-shrink-0">
-                          <img
-                            src={mounted ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/v1/uploads/${article.article_image}` : ''}
-                            alt={article.title}
-                            className="w-full h-full object-cover rounded-lg shadow-sm"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
+                    <div className="grid gap-4 md:flex md:gap-4">
+                      <div className="w-full h-48 md:w-40 md:h-28 md:flex-shrink-0">
+                        <img
+                          src={mounted ? (article.article_image 
+                            ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/v1/uploads/${article.article_image}` 
+                            : '/noimage.svg'
+                          ) : '/noimage.svg'}
+                          alt={article.title}
+                          className="w-full h-full object-cover rounded-lg shadow-sm bg-gray-100"
+                          onError={(e) => {
+                            e.currentTarget.src = '/noimage.svg';
+                          }}
+                        />
+                      </div>
                       <div className="flex-1 grid gap-3">
                         <div className="flex justify-between items-start gap-4">
                           <h2 className="text-xl font-semibold text-gray-900 hover:text-blue-600">

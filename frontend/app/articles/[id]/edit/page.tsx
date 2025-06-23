@@ -346,18 +346,19 @@ export default function EditArticlePage() {
                 {imageUploadLoading && (
                   <p className="text-xs text-blue-600 mt-1">アップロード中...</p>
                 )}
-                {formData.article_image && (
-                  <div className="mt-2">
-                    <img
-                      src={mounted ? `${API_BASE_URL}/api/v1/uploads/${formData.article_image}` : ''}
-                      alt="記事画像プレビュー"
-                      className="w-full max-w-md h-48 object-cover rounded-lg shadow-sm"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
+                <div className="mt-2">
+                  <img
+                    src={mounted ? (formData.article_image 
+                      ? `${API_BASE_URL}/api/v1/uploads/${formData.article_image}` 
+                      : '/noimage.svg'
+                    ) : '/noimage.svg'}
+                    alt="記事画像プレビュー"
+                    className="w-full max-w-md h-48 object-cover rounded-lg shadow-sm bg-gray-100"
+                    onError={(e) => {
+                      e.currentTarget.src = '/noimage.svg';
+                    }}
+                  />
+                </div>
               </div>
 
               {/* 内容 */}
