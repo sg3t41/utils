@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/sg3t41/api/internal/domain/entity"
-	"github.com/sg3t41/api/internal/interfaces/dto"
 )
 
 // User related helper functions
@@ -32,7 +31,7 @@ func convertUserToResponse(user *entity.User) UserResponse {
 }
 
 // buildUsersPaginatedResponse builds paginated response for users
-func buildUsersPaginatedResponse(users []*entity.User, total int, page, limit int) dto.UsersResponse {
+func buildUsersPaginatedResponse(users []*entity.User, total int, page, limit int) map[string]interface{} {
 	userResponses := make([]UserResponse, len(users))
 	for i, user := range users {
 		userResponses[i] = convertUserToResponse(user)
@@ -40,15 +39,15 @@ func buildUsersPaginatedResponse(users []*entity.User, total int, page, limit in
 
 	totalPages := (total + limit - 1) / limit
 
-	return dto.UsersResponse{
-		Users: userResponses,
-		Pagination: dto.PaginationMeta{
-			Page:       page,
-			Limit:      limit,
-			Total:      total,
-			TotalPages: totalPages,
-			HasNext:    page < totalPages,
-			HasPrev:    page > 1,
+	return map[string]interface{}{
+		"users": userResponses,
+		"pagination": map[string]interface{}{
+			"page":        page,
+			"limit":       limit,
+			"total":       total,
+			"total_pages": totalPages,
+			"has_next":    page < totalPages,
+			"has_prev":    page > 1,
 		},
 	}
 }

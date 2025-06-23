@@ -9,21 +9,21 @@ import (
 
 // 共通のレスポンス処理
 
-// ErrorResponse 統一エラーレスポンス
-func ErrorResponse(c *gin.Context, statusCode int, message string) {
+// SendErrorResponse 統一エラーレスポンス
+func SendErrorResponse(c *gin.Context, statusCode int, message string) {
 	c.JSON(statusCode, gin.H{"error": message})
 }
 
 // ValidationErrorResponse バリデーションエラーレスポンス
 func ValidationErrorResponse(c *gin.Context) {
-	ErrorResponse(c, http.StatusBadRequest, "バリデーションが実行されていません")
+	SendErrorResponse(c, http.StatusBadRequest, "バリデーションが実行されていません")
 }
 
 // ParseIDParam IDパラメータの解析
 func ParseIDParam(c *gin.Context) (string, bool) {
 	id := c.Param("id")
 	if id == "" {
-		ErrorResponse(c, http.StatusBadRequest, "IDが指定されていません")
+		SendErrorResponse(c, http.StatusBadRequest, "IDが指定されていません")
 		return "", false
 	}
 	return id, true
@@ -59,7 +59,7 @@ func GetValidatedBody[T any](c *gin.Context) (*T, bool) {
 
 	typedReq, ok := req.(*T)
 	if !ok {
-		ErrorResponse(c, http.StatusBadRequest, "リクエスト形式が不正です")
+		SendErrorResponse(c, http.StatusBadRequest, "リクエスト形式が不正です")
 		return nil, false
 	}
 

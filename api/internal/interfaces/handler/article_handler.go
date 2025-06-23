@@ -187,7 +187,7 @@ func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 		ID: id,
 	}
 
-	_, err = h.deleteArticleUseCase.Execute(c.Request.Context(), input)
+	_, err := h.deleteArticleUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
 		if err.Error() == "article not found" {
 			c.JSON(http.StatusNotFound, gin.H{"error": "記事が見つかりません"})

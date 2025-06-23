@@ -85,7 +85,7 @@ func convertArticleToResponse(article *entity.Article) dto.ArticleResponse {
 	}
 
 	if article.ArticleImage != nil {
-		response.ArticleImage = *article.ArticleImage
+		response.ArticleImage = article.ArticleImage
 	}
 
 	if article.PublishedAt != nil {
@@ -105,11 +105,10 @@ func convertArticleToListResponse(article *entity.Article) dto.ArticleListRespon
 		Status:    string(article.Status),
 		Tags:      article.Tags,
 		CreatedAt: article.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: article.UpdatedAt.Format(time.RFC3339),
 	}
 
 	if article.ArticleImage != nil {
-		response.ArticleImage = *article.ArticleImage
+		response.ArticleImage = article.ArticleImage
 	}
 
 	if article.PublishedAt != nil {
