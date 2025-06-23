@@ -12,10 +12,13 @@ interface Article {
   status: string;
   author_id: string;
   tags: string[];
+  article_image?: string;
   created_at: string;
   updated_at: string;
   published_at: string | null;
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function ArticleDetailPage() {
   const params = useParams();
@@ -24,11 +27,16 @@ export default function ArticleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/v1/articles/${params.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${params.id}`);
       if (!response.ok) {
         throw new Error('記事が見つかりませんでした');
       }
@@ -53,7 +61,7 @@ export default function ArticleDetailPage() {
     
     try {
       setActionLoading('publish');
-      const response = await fetch(`http://localhost:8080/api/v1/articles/${article.id}/publish`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${article.id}/publish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +87,7 @@ export default function ArticleDetailPage() {
     
     try {
       setActionLoading('unpublish');
-      const response = await fetch(`http://localhost:8080/api/v1/articles/${article.id}/unpublish`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${article.id}/unpublish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,7 +116,7 @@ export default function ArticleDetailPage() {
 
     try {
       setActionLoading('delete');
-      const response = await fetch(`http://localhost:8080/api/v1/articles/${article.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${article.id}`, {
         method: 'DELETE',
       });
 
@@ -194,6 +202,20 @@ export default function ArticleDetailPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {/* ヘッダー画像 */}
+          {article.article_image && (
+            <div className="w-full h-64 md:h-96">
+              <img
+                src={mounted ? `${API_BASE_URL}/api/v1/uploads/${article.article_image}` : ''}
+                alt={article.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+          
           {/* ヘッダー */}
           <div className="border-b border-gray-200 p-6">
             <div className="grid gap-4">
@@ -276,6 +298,7 @@ export default function ArticleDetailPage() {
                   ))}
                 </div>
               )}
+
 
               {/* 概要 */}
               {article.summary && (

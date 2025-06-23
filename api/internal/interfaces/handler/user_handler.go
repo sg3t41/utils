@@ -283,7 +283,7 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 	input := usecase.UpdatePasswordInput{
 		UserID:          id,
 		OldPassword:     updatePasswordReq.CurrentPassword,
-		NewPassword:     updatePasswordReq.Password,
+		NewPassword:     updatePasswordReq.NewPassword,
 		ConfirmPassword: updatePasswordReq.ConfirmPassword,
 	}
 

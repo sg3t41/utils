@@ -12,6 +12,7 @@ interface Article {
   status: string;
   author_id: string;
   tags: string[];
+  article_image?: string;
   created_at: string;
   updated_at: string;
   published_at: string | null;
@@ -22,7 +23,10 @@ interface UpdateArticleRequest {
   content?: string;
   summary?: string;
   tags?: string[];
+  article_image?: string;
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function EditArticlePage() {
   const params = useParams();
@@ -37,13 +41,21 @@ export default function EditArticlePage() {
     content: '',
     summary: '',
     tags: [],
+    featured_image: '',
   });
   const [tagInput, setTagInput] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUploadLoading, setImageUploadLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/v1/articles/${params.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${params.id}`);
       if (!response.ok) {
         throw new Error('記事が見つかりませんでした');
       }
@@ -55,6 +67,7 @@ export default function EditArticlePage() {
         content: data.content,
         summary: data.summary,
         tags: data.tags,
+        article_image: data.article_image,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'エラーが発生しました');
@@ -81,7 +94,7 @@ export default function EditArticlePage() {
       setSaving(true);
       setError(null);
 
-      const response = await fetch(`http://localhost:8080/api/v1/articles/${params.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${params.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -126,6 +139,46 @@ export default function EditArticlePage() {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleAddTag();
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      setImageUploadLoading(true);
+      
+      const uploadFormData = new FormData();
+      uploadFormData.append('image', file);
+      
+      const response = await fetch(`${API_BASE_URL}/api/v1/upload/image`, {
+        method: 'POST',
+        body: uploadFormData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('画像のアップロードに失敗しました');
+      }
+      
+      const data = await response.json();
+      
+      // 画像を設定
+      setFormData(prev => ({
+        ...prev,
+        article_image: data.image_path,
+      }));
+      
+      alert('画像をアップロードしました');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '画像のアップロードに失敗しました');
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      handleImageUpload(file);
     }
   };
 
@@ -273,6 +326,36 @@ export default function EditArticlePage() {
                         </button>
                       </span>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 記事画像 */}
+              <div>
+                <label htmlFor="articleImage" className="block text-sm font-medium text-gray-700 mb-2">
+                  記事画像（ヘッダー・サムネイルで使用）
+                </label>
+                <input
+                  type="file"
+                  id="articleImage"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  disabled={imageUploadLoading}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {imageUploadLoading && (
+                  <p className="text-xs text-blue-600 mt-1">アップロード中...</p>
+                )}
+                {formData.article_image && (
+                  <div className="mt-2">
+                    <img
+                      src={mounted ? `${API_BASE_URL}/api/v1/uploads/${formData.article_image}` : ''}
+                      alt="記事画像プレビュー"
+                      className="w-full max-w-md h-48 object-cover rounded-lg shadow-sm"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
                   </div>
                 )}
               </div>

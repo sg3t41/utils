@@ -23,8 +23,7 @@ type Article struct {
 	Status         ArticleStatus `json:"status" db:"status"`
 	AuthorID       string        `json:"author_id" db:"author_id"`
 	Tags           []string      `json:"tags" db:"tags"`
-	FeaturedImage  *string       `json:"featured_image" db:"featured_image"`
-	ThumbnailImage *string       `json:"thumbnail_image" db:"thumbnail_image"`
+	ArticleImage   *string       `json:"article_image" db:"article_image"`
 	CreatedAt      time.Time     `json:"created_at" db:"created_at"`
 	UpdatedAt      time.Time     `json:"updated_at" db:"updated_at"`
 	PublishedAt    *time.Time    `json:"published_at" db:"published_at"`
@@ -105,31 +104,19 @@ func (a *Article) UnmarshalTags(data []byte) error {
 	return json.Unmarshal(data, &a.Tags)
 }
 
-// SetFeaturedImage sets the featured image path
-func (a *Article) SetFeaturedImage(imagePath string) {
-	a.FeaturedImage = &imagePath
+// SetArticleImage sets the article image path
+func (a *Article) SetArticleImage(imagePath string) {
+	a.ArticleImage = &imagePath
 	a.UpdatedAt = time.Now()
 }
 
-// SetThumbnailImage sets the thumbnail image path
-func (a *Article) SetThumbnailImage(imagePath string) {
-	a.ThumbnailImage = &imagePath
+// ClearImage removes the image reference
+func (a *Article) ClearImage() {
+	a.ArticleImage = nil
 	a.UpdatedAt = time.Now()
 }
 
-// ClearImages removes all image references
-func (a *Article) ClearImages() {
-	a.FeaturedImage = nil
-	a.ThumbnailImage = nil
-	a.UpdatedAt = time.Now()
-}
-
-// HasFeaturedImage returns true if the article has a featured image
-func (a *Article) HasFeaturedImage() bool {
-	return a.FeaturedImage != nil && *a.FeaturedImage != ""
-}
-
-// HasThumbnailImage returns true if the article has a thumbnail image
-func (a *Article) HasThumbnailImage() bool {
-	return a.ThumbnailImage != nil && *a.ThumbnailImage != ""
+// HasImage returns true if the article has an image
+func (a *Article) HasImage() bool {
+	return a.ArticleImage != nil && *a.ArticleImage != ""
 }

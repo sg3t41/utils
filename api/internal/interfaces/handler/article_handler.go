@@ -71,13 +71,19 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 		}
 	}
 
+	// Convert empty strings to nil for optional fields
+	var articleImage *string
+	if createArticleReq.ArticleImage != nil && *createArticleReq.ArticleImage != "" {
+		articleImage = createArticleReq.ArticleImage
+	}
+
 	input := usecase.CreateArticleInput{
-		Title:         createArticleReq.Title,
-		Content:       createArticleReq.Content,
-		Summary:       createArticleReq.Summary,
-		AuthorID:      authorIDStr,
-		Tags:          createArticleReq.Tags,
-		FeaturedImage: createArticleReq.FeaturedImage,
+		Title:    createArticleReq.Title,
+		Content:  createArticleReq.Content,
+		Summary:  createArticleReq.Summary,
+		AuthorID: authorIDStr,
+		Tags:     createArticleReq.Tags,
+		ArticleImage:    articleImage,
 	}
 
 	output, err := h.createArticleUseCase.Execute(c.Request.Context(), input)
@@ -175,12 +181,19 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 		return
 	}
 
+	// Convert empty strings to nil for optional fields  
+	var articleImage *string
+	if updateArticleReq.ArticleImage != nil && *updateArticleReq.ArticleImage != "" {
+		articleImage = updateArticleReq.ArticleImage
+	}
+
 	input := usecase.UpdateArticleInput{
 		ID:      id,
 		Title:   updateArticleReq.Title,
 		Content: updateArticleReq.Content,
 		Summary: updateArticleReq.Summary,
 		Tags:    updateArticleReq.Tags,
+		ArticleImage:   articleImage,
 	}
 
 	output, err := h.updateArticleUseCase.Execute(c.Request.Context(), input)
@@ -291,6 +304,7 @@ func convertArticleToResponse(article *entity.Article) *dto.ArticleResponse {
 		Status:      string(article.Status),
 		AuthorID:    article.AuthorID,
 		Tags:        article.Tags,
+		ArticleImage:       article.ArticleImage,
 		CreatedAt:   article.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt:   article.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 		PublishedAt: publishedAt,
@@ -310,6 +324,7 @@ func convertArticleToListResponse(article *entity.Article) dto.ArticleListRespon
 		Summary:     article.Summary,
 		Status:      string(article.Status),
 		Tags:        article.Tags,
+		ArticleImage:       article.ArticleImage,
 		CreatedAt:   article.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		PublishedAt: publishedAt,
 	}

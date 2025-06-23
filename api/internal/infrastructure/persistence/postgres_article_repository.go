@@ -26,8 +26,8 @@ func (r *PostgresArticleRepository) Create(ctx context.Context, article *entity.
 	}
 
 	query := `
-		INSERT INTO articles (id, title, content, summary, status, author_id, tags, created_at, updated_at, published_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		INSERT INTO articles (id, title, content, summary, status, author_id, tags, article_image, created_at, updated_at, published_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	`
 
 	_, err = r.db.ExecContext(ctx, query,
@@ -38,6 +38,7 @@ func (r *PostgresArticleRepository) Create(ctx context.Context, article *entity.
 		article.Status,
 		article.AuthorID,
 		tagsJSON,
+		article.ArticleImage,
 		article.CreatedAt,
 		article.UpdatedAt,
 		article.PublishedAt,
@@ -52,7 +53,7 @@ func (r *PostgresArticleRepository) Create(ctx context.Context, article *entity.
 
 func (r *PostgresArticleRepository) FindByID(ctx context.Context, id string) (*entity.Article, error) {
 	query := `
-		SELECT id, title, content, summary, status, author_id, tags, created_at, updated_at, published_at
+		SELECT id, title, content, summary, status, author_id, tags, article_image, created_at, updated_at, published_at
 		FROM articles
 		WHERE id = $1
 	`
@@ -70,6 +71,7 @@ func (r *PostgresArticleRepository) FindByID(ctx context.Context, id string) (*e
 		&article.Status,
 		&article.AuthorID,
 		&tagsJSON,
+		&article.ArticleImage,
 		&article.CreatedAt,
 		&article.UpdatedAt,
 		&article.PublishedAt,
@@ -148,7 +150,7 @@ func (r *PostgresArticleRepository) FindAll(ctx context.Context, filter reposito
 
 	// Build main query with pagination and sorting
 	query := fmt.Sprintf(`
-		SELECT id, title, content, summary, status, author_id, tags, created_at, updated_at, published_at
+		SELECT id, title, content, summary, status, author_id, tags, article_image, created_at, updated_at, published_at
 		FROM articles
 		%s
 		ORDER BY %s %s
@@ -176,6 +178,7 @@ func (r *PostgresArticleRepository) FindAll(ctx context.Context, filter reposito
 			&article.Status,
 			&article.AuthorID,
 			&tagsJSON,
+			&article.ArticleImage,
 			&article.CreatedAt,
 			&article.UpdatedAt,
 			&article.PublishedAt,
@@ -206,7 +209,7 @@ func (r *PostgresArticleRepository) Update(ctx context.Context, article *entity.
 
 	query := `
 		UPDATE articles
-		SET title = $2, content = $3, summary = $4, status = $5, tags = $6, updated_at = $7, published_at = $8
+		SET title = $2, content = $3, summary = $4, status = $5, tags = $6, article_image = $7, updated_at = $8, published_at = $9
 		WHERE id = $1
 	`
 
@@ -217,6 +220,7 @@ func (r *PostgresArticleRepository) Update(ctx context.Context, article *entity.
 		article.Summary,
 		article.Status,
 		tagsJSON,
+		article.ArticleImage,
 		article.UpdatedAt,
 		article.PublishedAt,
 	)

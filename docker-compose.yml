@@ -30,6 +30,8 @@ services:
       PORT: 8080
     ports:
       - "8080:8080"
+    volumes:
+      - ./api/uploads:/app/uploads
     depends_on:
       - db
     networks:
@@ -42,7 +44,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: utils_frontend
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
       API_URL: http://utils_api:8080
       NODE_ENV: development
     ports:

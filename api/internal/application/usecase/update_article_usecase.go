@@ -15,6 +15,7 @@ type UpdateArticleInput struct {
 	Content *string
 	Summary *string
 	Tags    []string
+	ArticleImage   *string
 }
 
 type UpdateArticleOutput struct {
@@ -73,6 +74,10 @@ func (uc *UpdateArticleUseCase) Execute(ctx context.Context, input UpdateArticle
 			}
 		}
 		existingArticle.Tags = input.Tags
+	}
+
+	if input.ArticleImage != nil {
+		existingArticle.ArticleImage = input.ArticleImage
 	}
 
 	// Update timestamp

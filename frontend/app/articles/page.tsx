@@ -9,6 +9,7 @@ interface Article {
   summary: string;
   status: string;
   tags: string[];
+  article_image?: string;
   created_at: string;
   published_at: string | null;
 }
@@ -34,6 +35,11 @@ export default function ArticlesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeSearchQuery, setActiveSearchQuery] = useState<string>('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchArticles = async () => {
     try {
@@ -51,7 +57,8 @@ export default function ArticlesPage() {
         params.append('search', activeSearchQuery.trim());
       }
 
-      const response = await fetch(`http://localhost:8080/api/v1/articles?${params}`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiUrl}/api/v1/articles?${params}`);
       if (!response.ok) {
         throw new Error('Failed to fetch articles');
       }
@@ -226,15 +233,28 @@ export default function ArticlesPage() {
                     key={article.id}
                     className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                   >
-                    <div className="grid gap-3">
-                      <div className="flex justify-between items-start gap-4">
-                        <h2 className="text-xl font-semibold text-gray-900 hover:text-blue-600">
-                          <Link href={`/articles/${article.id}`}>{article.title}</Link>
-                        </h2>
-                        <span className={getStatusBadge(article.status)}>
-                          {getStatusText(article.status)}
-                        </span>
-                      </div>
+                    <div className="flex gap-4">
+                      {article.article_image && (
+                        <div className="w-40 h-28 flex-shrink-0">
+                          <img
+                            src={mounted ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/v1/uploads/${article.article_image}` : ''}
+                            alt={article.title}
+                            className="w-full h-full object-cover rounded-lg shadow-sm"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 grid gap-3">
+                        <div className="flex justify-between items-start gap-4">
+                          <h2 className="text-xl font-semibold text-gray-900 hover:text-blue-600">
+                            <Link href={`/articles/${article.id}`}>{article.title}</Link>
+                          </h2>
+                          <span className={getStatusBadge(article.status)}>
+                            {getStatusText(article.status)}
+                          </span>
+                        </div>
                       
                       {article.summary && (
                         <p className="text-gray-600 line-clamp-2">{article.summary}</p>
@@ -253,11 +273,12 @@ export default function ArticlesPage() {
                         </div>
                       )}
                       
-                      <div className="flex justify-between items-center text-sm text-gray-500">
-                        <span>作成: {formatDate(article.created_at)}</span>
-                        {article.published_at && (
-                          <span>公開: {formatDate(article.published_at)}</span>
-                        )}
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>作成: {formatDate(article.created_at)}</span>
+                          {article.published_at && (
+                            <span>公開: {formatDate(article.published_at)}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
