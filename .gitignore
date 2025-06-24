@@ -1,1 +1,112 @@
+# Environment files
 *.env
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+.env.local.example
+
+# Build artifacts and binaries
+server
+api/server
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.a
+dist/
+build/
+target/
+out/
+
+# Test coverage and artifacts
+coverage.out
+coverage.html
+*.test
+test_*.go
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.log
+
+# Development tools
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Go specific
+vendor/
+*.mod.sum.bak
+
+# Node.js / Frontend specific
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# Next.js
+.next/
+out/
+
+# Parcel
+.cache/
+.parcel-cache/
+
+# Uploads and user-generated content
+uploads/
+api/uploads/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.svg
+!public/*.svg
+
+# Cache directories
+.cache/
+.parcel-cache/
+.turbo/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+.dockerignore
