@@ -37,7 +37,6 @@ func NewUploadHandler() *UploadHandler {
 
 // UploadImage handles image upload for articles
 func (h *UploadHandler) UploadImage(c *gin.Context) {
-	fmt.Printf("UploadImage handler called\n")
 	// Parse multipart form
 	err := c.Request.ParseMultipartForm(10 << 20) // 10MB limit
 	if err != nil {

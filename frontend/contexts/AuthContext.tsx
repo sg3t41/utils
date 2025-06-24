@@ -38,14 +38,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const token = localStorage.getItem('accessToken');
     const userData = localStorage.getItem('user');
     
-    console.log('AuthContext initializing:', { token, userData });
-    
     if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
         setAccessToken(token);
         setUser(parsedUser);
-        console.log('User loaded from localStorage:', parsedUser);
       } catch (error) {
         console.error('Failed to parse user data:', error);
         localStorage.removeItem('accessToken');
@@ -58,7 +55,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = (accessToken: string, refreshToken: string, user: User) => {
-    console.log('AuthContext login called with:', { accessToken, refreshToken, user });
     setAccessToken(accessToken);
     setUser(user);
     
@@ -66,7 +62,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
-    console.log('Saved to localStorage');
   };
 
   const logout = () => {

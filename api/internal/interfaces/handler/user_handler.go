@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sg3t41/api/internal/application/usecase"
+	"github.com/sg3t41/api/internal/domain/entity"
 	"github.com/sg3t41/api/internal/interfaces/dto"
 	"github.com/sg3t41/api/internal/interfaces/middleware"
 )
@@ -51,7 +52,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 
 	output, err := h.createUserUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		HandleUseCaseError(c, err, "ユーザー")
 		return
 	}
 
@@ -71,25 +72,30 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 
 	output, err := h.getUserUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		HandleUseCaseError(c, err, "ユーザー")
 		return
 	}
 
-	c.JSON(http.StatusOK, UserResponse{
-		ID:        output.User.ID,
-		Email:     output.User.Email,
-		Name:      output.User.Name,
-		Version:   output.User.Version,
-		CreatedAt: output.User.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		UpdatedAt: output.User.UpdatedAt.Format("2006-01-02T15:04:05Z"),
-	})
+	response := convertUserToResponse(output.User)
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *UserHandler) GetUsers(c *gin.Context) {
 	params := parsePaginationParams(c)
-	useCursor := params.Cursor != ""
+	
+	input := h.buildGetUsersInput(params)
+	output, err := h.getUsersUseCase.Execute(c.Request.Context(), input)
+	if err != nil {
+		HandleUseCaseError(c, err, "ユーザー")
+		return
+	}
 
-	input := usecase.GetUsersInput{
+	h.sendUsersResponse(c, output, params)
+}
+
+// buildGetUsersInput GetUsersInputの構築
+func (h *UserHandler) buildGetUsersInput(params PaginationParams) usecase.GetUsersInput {
+	return usecase.GetUsersInput{
 		Limit:       params.Limit,
 		Page:        params.Page,
 		Cursor:      params.Cursor,
@@ -99,56 +105,50 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 		Status:      params.Status,
 		CreatedFrom: params.CreatedFrom,
 		CreatedTo:   params.CreatedTo,
-		UseCursor:   useCursor,
+		UseCursor:   params.Cursor != "",
 	}
+}
 
-	output, err := h.getUsersUseCase.Execute(c.Request.Context(), input)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
+// sendUsersResponse ユーザー一覧のレスポンス送信
+func (h *UserHandler) sendUsersResponse(c *gin.Context, output *usecase.GetUsersOutput, params PaginationParams) {
 	users := make([]UserResponse, len(output.Users))
 	for i, user := range output.Users {
-		users[i] = UserResponse{
-			ID:        user.ID,
-			Email:     user.Email,
-			Name:      user.Name,
-			Version:   user.Version,
-			CreatedAt: user.CreatedAt.Format("2006-01-02T15:04:05Z"),
-			UpdatedAt: user.UpdatedAt.Format("2006-01-02T15:04:05Z"),
-		}
+		users[i] = convertUserToResponse(user)
 	}
 
-	if useCursor {
-		var nextCursor, prevCursor string
-		hasNext := len(output.Users) > params.Limit
-		
-		if hasNext {
-			users = users[:params.Limit]
-			lastUser := output.Users[params.Limit-1]
-			nextCursor = encodeCursor(Cursor{
-				ID:        lastUser.ID,
-				Timestamp: lastUser.CreatedAt,
-			})
-		}
-
-		if params.Cursor != "" {
-			prevCursor = params.Cursor
-		}
-
-		response := buildCursorResponse(users, hasNext, nextCursor, prevCursor, params)
-		c.JSON(http.StatusOK, response)
+	if params.Cursor != "" {
+		h.sendCursorPaginatedResponse(c, users, output.Users, params)
 	} else {
 		response := buildPaginatedResponse(users, output.Total, params)
 		c.JSON(http.StatusOK, response)
 	}
 }
 
+// sendCursorPaginatedResponse カーソルページネーションレスポンスの送信
+func (h *UserHandler) sendCursorPaginatedResponse(c *gin.Context, users []UserResponse, allUsers []*entity.User, params PaginationParams) {
+	var nextCursor, prevCursor string
+	hasNext := len(allUsers) > params.Limit
+	
+	if hasNext {
+		users = users[:params.Limit]
+		lastUser := allUsers[params.Limit-1]
+		nextCursor = encodeCursor(Cursor{
+			ID:        lastUser.ID,
+			Timestamp: lastUser.CreatedAt,
+		})
+	}
+
+	if params.Cursor != "" {
+		prevCursor = params.Cursor
+	}
+
+	response := buildCursorResponse(users, hasNext, nextCursor, prevCursor, params)
+	c.JSON(http.StatusOK, response)
+}
+
 func (h *UserHandler) DeleteUser(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+	id, ok := ParseIDParam(c)
+	if !ok {
 		return
 	}
 
@@ -161,7 +161,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	_, err := h.deleteUserUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		HandleUseCaseError(c, err, "ユーザー")
 		return
 	}
 
@@ -169,20 +169,12 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 }
 
 func (h *UserHandler) UpdateUser(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+	id, ok := ParseIDParam(c)
+	if !ok {
 		return
 	}
 
-	currentUser := middleware.GetUserFromContext(c)
-	if currentUser == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
-	if currentUser.ID != id && !currentUser.IsAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+	if !h.validateUserAccess(c, id) {
 		return
 	}
 
@@ -205,44 +197,21 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	output, err := h.updateUserUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		switch err {
-		case usecase.ErrUserNotFound:
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		case usecase.ErrEmailAlreadyTaken:
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		case usecase.ErrVersionConflict:
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		HandleUseCaseError(c, err, "ユーザー")
 		return
 	}
 
-	c.JSON(http.StatusOK, UserResponse{
-		ID:        output.User.ID,
-		Email:     output.User.Email,
-		Name:      output.User.Name,
-		Version:   output.User.Version,
-		CreatedAt: output.User.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		UpdatedAt: output.User.UpdatedAt.Format("2006-01-02T15:04:05Z"),
-	})
+	response := convertUserToResponse(output.User)
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *UserHandler) UpdatePassword(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+	id, ok := ParseIDParam(c)
+	if !ok {
 		return
 	}
 
-	currentUser := middleware.GetUserFromContext(c)
-	if currentUser == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
-	if currentUser.ID != id && !currentUser.IsAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+	if !h.validateUserAccess(c, id) {
 		return
 	}
 
@@ -267,20 +236,25 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 
 	_, err := h.updatePasswordUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		switch err {
-		case usecase.ErrUserNotFound:
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		case usecase.ErrInvalidOldPassword:
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		case usecase.ErrPasswordMismatch:
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		case usecase.ErrWeakPassword:
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		HandleUseCaseError(c, err, "パスワード")
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "password updated successfully"})
+}
+
+// validateUserAccess ユーザーアクセス権限の検証
+func (h *UserHandler) validateUserAccess(c *gin.Context, targetUserID string) bool {
+	currentUser := middleware.GetUserFromContext(c)
+	if currentUser == nil {
+		SendErrorResponse(c, http.StatusUnauthorized, "認証されていません")
+		return false
+	}
+
+	if currentUser.ID != targetUserID && !currentUser.IsAdmin {
+		SendErrorResponse(c, http.StatusForbidden, "アクセス権限がありません")
+		return false
+	}
+
+	return true
 }

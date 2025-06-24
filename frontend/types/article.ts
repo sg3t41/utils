@@ -37,8 +37,13 @@ export interface CreateArticleRequest {
   article_image?: string;
 }
 
-export interface UpdateArticleRequest extends CreateArticleRequest {
-  id: string;
+export interface UpdateArticleRequest {
+  title?: string;
+  summary?: string;
+  content?: string;
+  status?: 'draft' | 'published' | 'archived';
+  tags?: string[];
+  article_image?: string;
 }
 
 export type ArticleStatus = 'draft' | 'published' | 'archived';

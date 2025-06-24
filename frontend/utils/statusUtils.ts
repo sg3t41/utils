@@ -3,23 +3,24 @@ import { ArticleStatus } from '@/types/article';
 /**
  * ステータスに応じたバッジスタイルを返す
  */
-export const getStatusBadge = (status: ArticleStatus): string => {
+export const getStatusBadge = (status: ArticleStatus | string): string => {
+  const baseClasses = 'px-2 py-1 text-xs font-medium rounded-full';
   switch (status) {
     case 'published':
-      return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm';
+      return `${baseClasses} bg-green-100 text-green-800`;
     case 'draft':
-      return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm';
+      return `${baseClasses} bg-yellow-100 text-yellow-800`;
     case 'archived':
-      return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm';
+      return `${baseClasses} bg-gray-100 text-gray-800`;
     default:
-      return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm';
+      return `${baseClasses} bg-gray-100 text-gray-800`;
   }
 };
 
 /**
  * ステータスの日本語表示名を返す
  */
-export const getStatusText = (status: ArticleStatus): string => {
+export const getStatusText = (status: ArticleStatus | string): string => {
   switch (status) {
     case 'published':
       return '公開済み';
@@ -28,7 +29,7 @@ export const getStatusText = (status: ArticleStatus): string => {
     case 'archived':
       return 'アーカイブ';
     default:
-      return '不明';
+      return status || '不明';
   }
 };
 

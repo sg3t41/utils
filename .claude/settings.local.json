@@ -242,7 +242,11 @@
       "Bash(./server)",
       "Bash(pkill:*)",
       "Bash(PORT=3000 npm run dev)",
-      "Bash(fuser:*)"
+      "Bash(fuser:*)",
+      "Bash(npx next:*)",
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(npx --package=typescript tsc --noEmit)"
     ],
     "deny": [
       "Bash(sudo:*)",

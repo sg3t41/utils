@@ -77,6 +77,7 @@ func (r *Router) SetupRoutes() {
 			auth.POST("/login", r.authHandler.Login)
 			auth.POST("/refresh", r.authHandler.RefreshToken)
 			auth.POST("/logout", r.authHandler.Logout)
+			auth.GET("/validate", r.authHandler.ValidateToken)
 			
 			// LINE認証エンドポイント
 			line := auth.Group("/line")

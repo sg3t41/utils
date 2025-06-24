@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../contexts/AuthContext';
+import { get, post, del, handleApiError } from '../../../utils/apiClient';
+import { API_BASE_URL } from '../../../types/api';
+import { formatDateTime } from '../../../utils/dateFormat';
+import { getStatusBadge, getStatusText } from '../../../utils/statusUtils';
 
 interface Article {
   id: string;
@@ -18,8 +22,6 @@ interface Article {
   updated_at: string;
   published_at: string | null;
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function ArticleDetailPage() {
   const params = useParams();
@@ -38,15 +40,10 @@ export default function ArticleDetailPage() {
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${params.id}`);
-      if (!response.ok) {
-        throw new Error('記事が見つかりませんでした');
-      }
-
-      const data: Article = await response.json();
+      const data: Article = await get(`/api/v1/articles/${params.id}`);
       setArticle(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'エラーが発生しました');
+      setError(handleApiError(err));
     } finally {
       setLoading(false);
     }
@@ -63,22 +60,10 @@ export default function ArticleDetailPage() {
     
     try {
       setActionLoading('publish');
-      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${article.id}/publish`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-      });
-
-      if (!response.ok) {
-        throw new Error('公開に失敗しました');
-      }
-
-      const updatedArticle: Article = await response.json();
+      const updatedArticle: Article = await post(`/api/v1/articles/${article.id}/publish`, {});
       setArticle(updatedArticle);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '公開に失敗しました');
+      alert(handleApiError(err));
     } finally {
       setActionLoading(null);
     }
@@ -89,21 +74,10 @@ export default function ArticleDetailPage() {
     
     try {
       setActionLoading('unpublish');
-      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${article.id}/unpublish`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('非公開化に失敗しました');
-      }
-
-      const updatedArticle: Article = await response.json();
+      const updatedArticle: Article = await post(`/api/v1/articles/${article.id}/unpublish`);
       setArticle(updatedArticle);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '非公開化に失敗しました');
+      alert(handleApiError(err));
     } finally {
       setActionLoading(null);
     }
@@ -118,59 +92,16 @@ export default function ArticleDetailPage() {
 
     try {
       setActionLoading('delete');
-      const response = await fetch(`${API_BASE_URL}/api/v1/articles/${article.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('削除に失敗しました');
-      }
-
+      await del(`/api/v1/articles/${article.id}`);
       alert('記事を削除しました');
       router.push('/articles');
     } catch (err) {
-      alert(err instanceof Error ? err.message : '削除に失敗しました');
+      alert(handleApiError(err));
     } finally {
       setActionLoading(null);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    const baseClasses = 'px-3 py-1 text-sm font-medium rounded-full';
-    switch (status) {
-      case 'published':
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case 'draft':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
-      case 'archived':
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'published':
-        return '公開済み';
-      case 'draft':
-        return '下書き';
-      case 'archived':
-        return 'アーカイブ';
-      default:
-        return status;
-    }
-  };
 
   if (loading) {
     return (
@@ -202,7 +133,7 @@ export default function ArticleDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-8">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {/* ヘッダー画像 */}
           {article.article_image && (
@@ -281,12 +212,12 @@ export default function ArticleDetailPage() {
               {/* メタ情報 */}
               <div className="grid gap-2 text-sm text-gray-600">
                 <div className="flex justify-between">
-                  <span>作成日時: {formatDate(article.created_at)}</span>
-                  <span>更新日時: {formatDate(article.updated_at)}</span>
+                  <span>作成日時: {formatDateTime(article.created_at)}</span>
+                  <span>更新日時: {formatDateTime(article.updated_at)}</span>
                 </div>
                 {article.published_at && (
                   <div>
-                    <span>公開日時: {formatDate(article.published_at)}</span>
+                    <span>公開日時: {formatDateTime(article.published_at)}</span>
                   </div>
                 )}
               </div>

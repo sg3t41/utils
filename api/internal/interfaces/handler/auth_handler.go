@@ -33,18 +33,12 @@ type UserInfo struct {
 	Name  string `json:"name"`
 }
 
-type ErrorResponse struct {
-	Error   string `json:"error"`
-	Message string `json:"message"`
-}
+// ErrorResponseはStandardErrorResponseを使用するため削除
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req entity.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "invalid_request",
-			Message: "Invalid request format",
-		})
+		SendErrorWithCodeResponse(c, http.StatusBadRequest, "Invalid request format", "INVALID_REQUEST")
 		return
 	}
 
@@ -55,29 +49,14 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// Attempt login
 	tokenPair, err := h.authService.Login(c.Request.Context(), &req, ipAddress, userAgent)
 	if err != nil {
-		status := http.StatusUnauthorized
-		errorCode := "invalid_credentials"
-		
-		// Check for specific error types
-		if strings.Contains(err.Error(), "too many") {
-			status = http.StatusTooManyRequests
-			errorCode = "rate_limit_exceeded"
-		}
-
-		c.JSON(status, ErrorResponse{
-			Error:   errorCode,
-			Message: err.Error(),
-		})
+		HandleAuthError(c, err)
 		return
 	}
 
 	// Extract user info from token
 	claims, err := h.authService.ValidateToken(c.Request.Context(), tokenPair.AccessToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error:   "token_generation_failed",
-			Message: "Failed to generate valid token",
-		})
+		SendErrorWithCodeResponse(c, http.StatusInternalServerError, "Failed to generate valid token", "TOKEN_GENERATION_FAILED")
 		return
 	}
 
@@ -97,10 +76,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	var req entity.RefreshRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "invalid_request",
-			Message: "Invalid request format",
-		})
+		SendErrorWithCodeResponse(c, http.StatusBadRequest, "Invalid request format", "INVALID_REQUEST")
 		return
 	}
 
@@ -111,19 +87,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	// Refresh token
 	tokenPair, err := h.authService.RefreshToken(c.Request.Context(), &req, ipAddress, userAgent)
 	if err != nil {
-		status := http.StatusUnauthorized
-		errorCode := "invalid_token"
-		
-		if strings.Contains(err.Error(), "reuse detected") {
-			errorCode = "token_reuse_detected"
-		} else if strings.Contains(err.Error(), "session expired") {
-			errorCode = "session_expired"
-		}
-
-		c.JSON(status, ErrorResponse{
-			Error:   errorCode,
-			Message: err.Error(),
-		})
+		HandleAuthError(c, err)
 		return
 	}
 
@@ -139,19 +103,13 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	// Extract access token from Authorization header
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error:   "unauthorized",
-			Message: "Authorization header required",
-		})
+		SendErrorWithCodeResponse(c, http.StatusUnauthorized, "Authorization header required", "UNAUTHORIZED")
 		return
 	}
 
 	tokenParts := strings.SplitN(authHeader, " ", 2)
 	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error:   "invalid_token_format",
-			Message: "Bearer token required",
-		})
+		SendErrorWithCodeResponse(c, http.StatusUnauthorized, "Bearer token required", "INVALID_TOKEN_FORMAT")
 		return
 	}
 
@@ -163,10 +121,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 	// Perform logout
 	if err := h.authService.Logout(c.Request.Context(), accessToken, &req); err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error:   "logout_failed",
-			Message: err.Error(),
-		})
+		SendErrorWithCodeResponse(c, http.StatusInternalServerError, err.Error(), "LOGOUT_FAILED")
 		return
 	}
 
@@ -179,18 +134,12 @@ func (h *AuthHandler) RevokeAllSessions(c *gin.Context) {
 	// Get user ID from context (set by auth middleware)
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error:   "unauthorized",
-			Message: "User not authenticated",
-		})
+		SendErrorWithCodeResponse(c, http.StatusUnauthorized, "User not authenticated", "UNAUTHORIZED")
 		return
 	}
 
 	if err := h.authService.RevokeAllSessions(c.Request.Context(), userID.(string)); err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error:   "revocation_failed",
-			Message: "Failed to revoke all sessions",
-		})
+		SendErrorWithCodeResponse(c, http.StatusInternalServerError, "Failed to revoke all sessions", "REVOCATION_FAILED")
 		return
 	}
 
@@ -203,10 +152,7 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 	// Get user claims from context (set by auth middleware)
 	claims, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error:   "unauthorized",
-			Message: "User not authenticated",
-		})
+		SendErrorWithCodeResponse(c, http.StatusUnauthorized, "User not authenticated", "UNAUTHORIZED")
 		return
 	}
 
@@ -216,5 +162,41 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 		ID:    userClaims.UserID,
 		Email: userClaims.Email,
 		Name:  userClaims.Name,
+	})
+}
+
+// ValidateToken validates the provided token
+func (h *AuthHandler) ValidateToken(c *gin.Context) {
+	// Extract access token from Authorization header
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		SendErrorWithCodeResponse(c, http.StatusUnauthorized, "Authorization header required", "UNAUTHORIZED")
+		return
+	}
+
+	tokenParts := strings.SplitN(authHeader, " ", 2)
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		SendErrorWithCodeResponse(c, http.StatusUnauthorized, "Bearer token required", "INVALID_TOKEN_FORMAT")
+		return
+	}
+
+	accessToken := tokenParts[1]
+
+	// Validate the token
+	claims, err := h.authService.ValidateToken(c.Request.Context(), accessToken)
+	if err != nil {
+		HandleAuthError(c, err)
+		return
+	}
+
+	userClaims := claims
+	
+	c.JSON(http.StatusOK, gin.H{
+		"valid": true,
+		"user": UserInfo{
+			ID:    userClaims.UserID,
+			Email: userClaims.Email,
+			Name:  userClaims.Name,
+		},
 	})
 }

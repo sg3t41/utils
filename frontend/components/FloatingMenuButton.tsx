@@ -116,20 +116,123 @@ export default function FloatingMenuButton() {
               )}
 
               {/* ナビゲーションリンク */}
-              <nav className="space-y-2">
+              <nav className="space-y-1">
                 <Link
                   href="/"
                   onClick={closeMenu}
-                  className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors border border-transparent hover:border-blue-200"
                 >
-                  ホーム
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">🏠</span>
+                    <span>ホーム</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
                 <Link
                   href="/articles"
                   onClick={closeMenu}
-                  className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors border border-transparent hover:border-blue-200"
                 >
-                  記事一覧
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">📝</span>
+                    <span>ブログ</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/projects"
+                  onClick={closeMenu}
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors border border-transparent hover:border-purple-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">🛠️</span>
+                    <span>制作物</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/finance"
+                  onClick={closeMenu}
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors border border-transparent hover:border-green-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">💰</span>
+                    <span>収支表</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/shared"
+                  onClick={closeMenu}
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors border border-transparent hover:border-orange-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">🔗</span>
+                    <span>共有</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/photos"
+                  onClick={closeMenu}
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors border border-transparent hover:border-pink-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">📸</span>
+                    <span>写真</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/notes"
+                  onClick={closeMenu}
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 transition-colors border border-transparent hover:border-yellow-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">📔</span>
+                    <span>メモ</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/ranking"
+                  onClick={closeMenu}
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors border border-transparent hover:border-red-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">🏆</span>
+                    <span>ランキング</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/links"
+                  onClick={closeMenu}
+                  className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border border-transparent hover:border-indigo-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">🌐</span>
+                    <span>リンク</span>
+                  </div>
+                  <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
                 
                 {isAdmin && (
@@ -139,9 +242,15 @@ export default function FloatingMenuButton() {
                     <Link
                       href="/articles/new"
                       onClick={closeMenu}
-                      className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                      className="flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors border border-transparent hover:border-blue-200"
                     >
-                      新規記事作成
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">✏️</span>
+                        <span>新規記事作成</span>
+                      </div>
+                      <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </Link>
                   </>
                 )}

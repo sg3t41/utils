@@ -48,10 +48,7 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 
 
 	// Convert empty strings to nil for optional fields
-	var articleImage *string
-	if createArticleReq.ArticleImage != nil && *createArticleReq.ArticleImage != "" {
-		articleImage = createArticleReq.ArticleImage
-	}
+	articleImage := h.processOptionalString(createArticleReq.ArticleImage)
 
 	input := usecase.CreateArticleInput{
 		Title:    createArticleReq.Title,
@@ -63,7 +60,7 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 
 	output, err := h.createArticleUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		HandleUseCaseError(c, err, "記事")
 		return
 	}
 
@@ -102,7 +99,7 @@ func (h *ArticleHandler) GetArticles(c *gin.Context) {
 
 	output, err := h.getArticlesUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		HandleUseCaseError(c, err, "記事")
 		return
 	}
 
@@ -123,11 +120,7 @@ func (h *ArticleHandler) GetArticle(c *gin.Context) {
 
 	output, err := h.getArticleUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		if err.Error() == "article not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "記事が見つかりません"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		HandleUseCaseError(c, err, "記事")
 		return
 	}
 
@@ -148,10 +141,7 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 	}
 
 	// Convert empty strings to nil for optional fields  
-	var articleImage *string
-	if updateArticleReq.ArticleImage != nil && *updateArticleReq.ArticleImage != "" {
-		articleImage = updateArticleReq.ArticleImage
-	}
+	articleImage := h.processOptionalString(updateArticleReq.ArticleImage)
 
 	input := usecase.UpdateArticleInput{
 		ID:      id,
@@ -164,11 +154,7 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 
 	output, err := h.updateArticleUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		if err.Error() == "article not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "記事が見つかりません"})
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
+		HandleUseCaseError(c, err, "記事")
 		return
 	}
 
@@ -189,11 +175,7 @@ func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 
 	_, err := h.deleteArticleUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		if err.Error() == "article not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "記事が見つかりません"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		HandleUseCaseError(c, err, "記事")
 		return
 	}
 
@@ -213,11 +195,7 @@ func (h *ArticleHandler) PublishArticle(c *gin.Context) {
 
 	output, err := h.publishArticleUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		if err.Error() == "article not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "記事が見つかりません"})
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
+		HandleUseCaseError(c, err, "記事")
 		return
 	}
 
@@ -238,11 +216,7 @@ func (h *ArticleHandler) UnpublishArticle(c *gin.Context) {
 
 	output, err := h.unpublishArticleUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
-		if err.Error() == "article not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "記事が見つかりません"})
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
+		HandleUseCaseError(c, err, "記事")
 		return
 	}
 
@@ -250,3 +224,12 @@ func (h *ArticleHandler) UnpublishArticle(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+
+
+// processOptionalString オプショナルな文字列の処理
+func (h *ArticleHandler) processOptionalString(value *string) *string {
+	if value != nil && *value != "" {
+		return value
+	}
+	return nil
+}

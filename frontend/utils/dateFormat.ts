@@ -1,7 +1,45 @@
 /**
- * 日付をフォーマットする共通関数
+ * 日付をフォーマットする共通関数（日付のみ）
  */
 export const formatDate = (dateString: string | null | undefined): string => {
+  if (!dateString) return '-';
+  
+  try {
+    return new Date(dateString).toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch (error) {
+    console.error('日付フォーマットエラー:', error);
+    return '無効な日付';
+  }
+};
+
+/**
+ * 日付と時刻をフォーマットする共通関数
+ */
+export const formatDateTime = (dateString: string | null | undefined): string => {
+  if (!dateString) return '-';
+  
+  try {
+    return new Date(dateString).toLocaleString('ja-JP', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch (error) {
+    console.error('日付フォーマットエラー:', error);
+    return '無効な日付';
+  }
+};
+
+/**
+ * 詳細な日付と時刻をフォーマットする関数（2桁表示）
+ */
+export const formatDetailedDateTime = (dateString: string | null | undefined): string => {
   if (!dateString) return '-';
   
   try {
