@@ -17,10 +17,9 @@ export default function NewArticlePage() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="grid gap-6">
-            {/* ヘッダー */}
             <h1 className="text-3xl font-bold text-gray-900">新しい記事を作成</h1>
-
-            {/* フォーム */}
+            
+            {/* ArticleFormコンポーネントを追加 */}
             <ArticleForm
               mode="create"
               onSubmit={createArticle}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Article, UpdateArticleRequest } from '../types/article';
-import { apiClient } from '../utils/apiClient';
+import { get, put } from '../utils/apiClient';
+import { ERROR_MESSAGES } from '../utils/constants';
 
 export function useArticleEdit(articleId: string | string[]) {
   const router = useRouter();
@@ -21,7 +22,7 @@ export function useArticleEdit(articleId: string | string[]) {
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const data = await apiClient.get<Article>(`/articles/${articleId}`);
+      const data = await get<Article>(`/api/v1/articles/${articleId}`);
       setArticle(data);
       setFormData({
         title: data.title,
@@ -45,7 +46,7 @@ export function useArticleEdit(articleId: string | string[]) {
 
   const updateArticle = async (data: UpdateArticleRequest) => {
     if (!data.title?.trim() || !data.content?.trim()) {
-      setError('タイトルと内容は必須です');
+      setError(ERROR_MESSAGES.REQUIRED_FIELDS);
       return;
     }
 
@@ -53,7 +54,7 @@ export function useArticleEdit(articleId: string | string[]) {
       setSaving(true);
       setError(null);
       
-      await apiClient.put(`/articles/${articleId}`, data);
+      await put(`/api/v1/articles/${articleId}`, data);
       alert('記事を更新しました！');
       router.push(`/articles/${articleId}`);
     } catch (err) {

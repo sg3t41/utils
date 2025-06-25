@@ -75,7 +75,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const isAuthenticated = !!user && !!accessToken;
-  const isAdmin = isAuthenticated && user?.name === 'st';
+  // 開発環境では常にadminとして扱う
+  const isAdmin = process.env.NODE_ENV === 'development' ? true : (isAuthenticated && user?.name === 'st');
 
   const value: AuthContextType = {
     user,
