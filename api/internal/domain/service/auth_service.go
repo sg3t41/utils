@@ -51,7 +51,7 @@ func (s *AuthenticationService) GenerateTokensForUser(ctx context.Context, user 
 	return &entity.TokenPair{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		ExpiresIn:    int64(30 * time.Minute / time.Second), // 30 minutes
+		ExpiresIn:    int64(24 * time.Hour / time.Second), // 24 hours
 	}, nil
 }
 

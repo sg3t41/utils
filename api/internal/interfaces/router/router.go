@@ -100,7 +100,12 @@ func (r *Router) SetupRoutes() {
 			users.GET("", r.validationMiddleware.ValidateQuery(&dto.ListUsersQuery{}), r.userHandler.GetUsers)
 			users.POST("", r.validationMiddleware.ValidateJSON(&dto.CreateUserRequest{}), r.userHandler.CreateUser)
 			users.GET("/:id", r.validationMiddleware.ValidateQuery(&dto.GetUserQuery{}), r.userHandler.GetUser)
-			users.DELETE("/:id", r.userHandler.DeleteUser) // 開発用: 認証不要で削除可能
+			
+			// Admin-only user endpoints
+			usersAdmin := users.Use(r.adminMiddleware.RequireAdmin())
+			{
+				usersAdmin.DELETE("/:id", r.userHandler.DeleteUser)
+			}
 			
 			// Protected user endpoints
 			authenticated := users.Use(r.authMiddleware.RequireAuth())
@@ -126,18 +131,9 @@ func (r *Router) SetupRoutes() {
 				articlesAdmin.POST("/:id/publish", r.validationMiddleware.ValidateJSON(&dto.PublishArticleRequest{}), r.articleHandler.PublishArticle)
 				articlesAdmin.POST("/:id/unpublish", r.articleHandler.UnpublishArticle)
 			}
-			
-			// Protected article endpoints (commented out for development)
-			// articlesAuth := articles.Use(r.authMiddleware.RequireAuth())
-			// {
-			// 	articlesAuth.PUT("/:id", r.validationMiddleware.ValidateJSON(&dto.UpdateArticleRequest{}), r.articleHandler.UpdateArticle)
-			// 	articlesAuth.DELETE("/:id", r.articleHandler.DeleteArticle)
-			// 	articlesAuth.POST("/:id/publish", r.validationMiddleware.ValidateJSON(&dto.PublishArticleRequest{}), r.articleHandler.PublishArticle)
-			// 	articlesAuth.POST("/:id/unpublish", r.articleHandler.UnpublishArticle)
-			// }
 		}
 
-		// Upload endpoints (admin only)
+		// Upload endpoints
 		upload := v1.Group("/upload")
 		upload.Use(r.adminMiddleware.RequireAdmin())
 		{

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +9,7 @@ import (
 	"github.com/sg3t41/api/internal/domain/repository"
 )
 
+// User ユーザー情報構造体
 type User struct {
 	ID      string
 	IsAdmin bool
@@ -19,142 +19,84 @@ type contextKey string
 
 const UserContextKey contextKey = "user"
 
+// AuthMiddleware 認証ミドルウェア構造体
 type AuthMiddleware struct {
 	authService repository.AuthService
 }
 
+// NewAuthMiddleware 認証ミドルウェアの作成
 func NewAuthMiddleware(authService repository.AuthService) *AuthMiddleware {
 	return &AuthMiddleware{
 		authService: authService,
 	}
 }
 
-type ErrorResponse struct {
-	Error   string `json:"error"`
-	Message string `json:"message"`
-}
-
+// RequireAuth 認証を必須とするミドルウェア
 func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := extractTokenFromHeader(c)
 		if token == "" {
-			c.JSON(http.StatusUnauthorized, ErrorResponse{
-				Error:   "unauthorized",
-				Message: "Authorization token required",
-			})
-			c.Abort()
+			HandleUnauthorizedError(c, ErrMsgTokenRequired)
 			return
 		}
 
 		claims, err := m.authService.ValidateToken(c.Request.Context(), token)
 		if err != nil {
-			status := http.StatusUnauthorized
-			errorCode := "invalid_token"
-			message := "Invalid or expired token"
-
-			if strings.Contains(err.Error(), "revoked") {
-				errorCode = "token_revoked"
-				message = "Token has been revoked"
-			} else if strings.Contains(err.Error(), "expired") {
-				errorCode = "token_expired"
-				message = "Token has expired"
-			}
-
-			c.JSON(status, ErrorResponse{
-				Error:   errorCode,
-				Message: message,
-			})
-			c.Abort()
+			HandleAuthError(c, err)
 			return
 		}
 
-		// Set user information in context
-		c.Set("user", claims)
-		c.Set("user_id", claims.UserID)
-		c.Set("user_email", claims.Email)
-		c.Set("user_roles", claims.Roles)
-		
+		setUserContext(c, claims)
 		c.Next()
 	}
 }
 
+// RequireRole 特定のロールを必須とするミドルウェア
 func (m *AuthMiddleware) RequireRole(role string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// First require authentication
 		token := extractTokenFromHeader(c)
 		if token == "" {
-			c.JSON(http.StatusUnauthorized, ErrorResponse{
-				Error:   "unauthorized",
-				Message: "Authorization token required",
-			})
-			c.Abort()
+			HandleUnauthorizedError(c, ErrMsgTokenRequired)
 			return
 		}
 
 		claims, err := m.authService.ValidateToken(c.Request.Context(), token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, ErrorResponse{
-				Error:   "invalid_token",
-				Message: "Invalid or expired token",
-			})
-			c.Abort()
+			HandleAuthError(c, err)
 			return
 		}
 
-		// Check if user has required role
-		hasRole := false
-		for _, userRole := range claims.Roles {
-			if userRole == role {
-				hasRole = true
-				break
-			}
-		}
-
-		if !hasRole {
-			c.JSON(http.StatusForbidden, ErrorResponse{
-				Error:   "insufficient_permissions",
-				Message: "Insufficient permissions to access this resource",
-			})
-			c.Abort()
+		if !hasRole(claims.Roles, role) {
+			HandleForbiddenError(c, ErrMsgInsufficientPerms)
 			return
 		}
 
-		// Set user information in context
-		c.Set("user", claims)
-		c.Set("user_id", claims.UserID)
-		c.Set("user_email", claims.Email)
-		c.Set("user_roles", claims.Roles)
-		
+		setUserContext(c, claims)
 		c.Next()
 	}
 }
 
+// OptionalAuth オプションの認証ミドルウェア
 func (m *AuthMiddleware) OptionalAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := extractTokenFromHeader(c)
 		if token == "" {
-			// No token provided, continue without authentication
 			c.Next()
 			return
 		}
 
 		claims, err := m.authService.ValidateToken(c.Request.Context(), token)
 		if err != nil {
-			// Invalid token, continue without authentication
 			c.Next()
 			return
 		}
 
-		// Set user information in context
-		c.Set("user", claims)
-		c.Set("user_id", claims.UserID)
-		c.Set("user_email", claims.Email)
-		c.Set("user_roles", claims.Roles)
-		
+		setUserContext(c, claims)
 		c.Next()
 	}
 }
 
+// extractTokenFromHeader リクエストヘッダーからトークンを抽出
 func extractTokenFromHeader(c *gin.Context) string {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
@@ -169,48 +111,24 @@ func extractTokenFromHeader(c *gin.Context) string {
 	return tokenParts[1]
 }
 
-// Legacy functions for backward compatibility
-func LegacyAuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
-			c.Abort()
-			return
-		}
-
-		tokenParts := strings.Split(authHeader, " ")
-		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
-			c.Abort()
-			return
-		}
-
-		token := tokenParts[1]
-		user, err := validateToken(token)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-			c.Abort()
-			return
-		}
-
-		c.Set("user", user)
-		c.Next()
-	}
+// setUserContext ユーザー情報をコンテキストに設定
+func setUserContext(c *gin.Context, claims *entity.Claims) {
+	c.Set("user", claims)
+	c.Set("user_id", claims.UserID)
+	c.Set("user_email", claims.Email)
+	c.Set("user_roles", claims.Roles)
 }
 
-func validateToken(token string) (*User, error) {
-	switch token {
-	case "admin-token":
-		return &User{ID: "admin", IsAdmin: true}, nil
-	case "user1-token":
-		return &User{ID: "user1", IsAdmin: false}, nil
-	case "user2-token":
-		return &User{ID: "user2", IsAdmin: false}, nil
-	default:
-		return nil, http.ErrNotSupported
+// hasRole ユーザーが特定のロールを持っているかチェック
+func hasRole(userRoles []string, requiredRole string) bool {
+	for _, role := range userRoles {
+		if role == requiredRole {
+			return true
+		}
 	}
+	return false
 }
+
 
 func GetUserFromContext(c *gin.Context) *User {
 	if user, exists := c.Get("user"); exists {
@@ -232,11 +150,7 @@ func UserFromContext(ctx context.Context) *User {
 	return nil
 }
 
+// contains スライス内に特定の要素が含まれているかチェック
 func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
+	return hasRole(slice, item)
 }

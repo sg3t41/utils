@@ -38,8 +38,8 @@ func provideJWTConfig(cfg *config.Config) (*entity.JWTConfig, error) {
 	return &entity.JWTConfig{
 		PrivateKey:           privateKey,
 		PublicKey:            &privateKey.PublicKey,
-		AccessTokenDuration:  15 * time.Minute,
-		RefreshTokenDuration: 7 * 24 * time.Hour,
+		AccessTokenDuration:  24 * time.Hour, // 24 hours
+		RefreshTokenDuration: 30 * 24 * time.Hour, // 30 days
 		Issuer:               "utils-api",
 	}, nil
 }
