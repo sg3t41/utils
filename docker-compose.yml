@@ -28,6 +28,9 @@ services:
       DB_USER: utils_user
       DB_PASSWORD: utils_password
       PORT: 8080
+      # LINE Bot設定（実際の値は.envファイルかコマンドラインで設定）
+      LINE_BOT_CHANNEL_SECRET: ${LINE_BOT_CHANNEL_SECRET:-}
+      LINE_BOT_ACCESS_TOKEN: ${LINE_BOT_ACCESS_TOKEN:-}
     ports:
       - "8080:8080"
     volumes:

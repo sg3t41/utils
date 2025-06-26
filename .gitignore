@@ -110,3 +110,15 @@ Thumbs.db
 # Docker
 docker-compose.override.yml
 .dockerignore
+
+# Environment variables
+.env
+
+# ngrok and development tools
+ngrok
+ngrok-*
+*.ngrok.io
+ngrok.log
+ngrok.pid
+*ngrok*.sh
+test_*.sh

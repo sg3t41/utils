@@ -18,6 +18,10 @@ var Module = fx.Module("interfaces",
 		handler.NewArticleHandler,
 		handler.NewUploadHandler,
 		handler.NewLineHandler,
+		fx.Annotate(
+			handler.NewLineBotHandler,
+			fx.As(new(handler.LineBotHandler)),
+		),
 		middleware.NewAuthMiddleware,
 		middleware.NewAdminMiddleware,
 		fx.Annotate(
