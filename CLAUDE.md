@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## 言語設定
 
 **重要: すべての回答、説明、コメントは日本語で出力してください。**
@@ -225,3 +227,78 @@ docs/
 -
 
 ## 備考
+
+## 開発環境とコマンド
+
+### プロジェクト構造
+
+このプロジェクトは**Go (Gin) + Next.js + PostgreSQL**で構築された個人用ダッシュボードアプリケーションです。
+
+**Clean Architecture / DDD**に基づいた設計:
+- `api/cmd/`: アプリケーションエントリポイント
+- `api/internal/domain/`: エンティティ、リポジトリインターフェース、ドメインサービス
+- `api/internal/application/`: ユースケース層
+- `api/internal/infrastructure/`: 外部サービス実装、永続化層
+- `api/internal/interfaces/`: HTTPハンドラ、ルーター、DTO
+- `frontend/`: Next.jsフロントエンド
+
+### 開発コマンド
+
+**全体起動（推奨）**:
+```bash
+docker-compose up --build
+```
+
+**個別起動**:
+```bash
+# バックエンド
+cd api && go run cmd/server/main.go
+
+# フロントエンド  
+cd frontend && npm run dev
+```
+
+**データベースマイグレーション**:
+```bash
+make migrate-up     # マイグレーション実行
+make migrate-down   # ロールバック
+make migrate-status # ステータス確認
+```
+
+**テスト実行**:
+```bash
+# Go単体テスト
+cd api && go test ./...
+
+# LINE Bot Webhookテスト
+./test_linebot.sh
+```
+
+**開発URL**:
+- フロントエンド: http://localhost:3000
+- API: http://localhost:8080
+- データベース: localhost:5432
+
+### 技術スタック詳細
+
+**バックエンド**:
+- Go 1.23+
+- Gin Webフレームワーク
+- Uber FX（依存性注入）
+- Zap（ロギング）
+- golang-migrate
+
+**フロントエンド**:
+- Next.js 15.3.4
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- ESLint + Prettier
+
+### 主要機能モジュール
+
+現在実装されている主要機能:
+- ブログシステム（`api/internal/domain/service/blog_service.go`）
+- ユーザー管理（LINE認証対応）
+- ファイルアップロード（画像）
+- LINE Bot連携（開発中）

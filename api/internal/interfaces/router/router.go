@@ -20,6 +20,7 @@ type Router struct {
 	articleHandler     *handler.ArticleHandler
 	uploadHandler      *handler.UploadHandler
 	lineHandler        *handler.LineHandler
+	lineBotHandler     handler.LineBotHandler
 	authMiddleware     *middleware.AuthMiddleware
 	adminMiddleware    *middleware.AdminMiddleware
 	validationMiddleware *middleware.ValidationMiddleware
@@ -33,6 +34,7 @@ func NewRouter(
 	articleHandler *handler.ArticleHandler,
 	uploadHandler *handler.UploadHandler,
 	lineHandler *handler.LineHandler,
+	lineBotHandler handler.LineBotHandler,
 	authMiddleware *middleware.AuthMiddleware,
 	adminMiddleware *middleware.AdminMiddleware,
 ) *Router {
@@ -54,6 +56,7 @@ func NewRouter(
 		articleHandler:     articleHandler,
 		uploadHandler:      uploadHandler,
 		lineHandler:        lineHandler,
+		lineBotHandler:     lineBotHandler,
 		authMiddleware:     authMiddleware,
 		adminMiddleware:    adminMiddleware,
 		validationMiddleware: validationMiddleware,
@@ -92,6 +95,12 @@ func (r *Router) SetupRoutes() {
 				authProtected.GET("/profile", r.authHandler.GetProfile)
 				authProtected.POST("/revoke-all", r.authHandler.RevokeAllSessions)
 			}
+		}
+
+		// LINE Bot endpoints (認証不要)
+		lineBot := v1.Group("/linebot")
+		{
+			lineBot.POST("/webhook", r.lineBotHandler.Webhook)
 		}
 
 		// User endpoints

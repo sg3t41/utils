@@ -247,7 +247,11 @@
       "Bash(npx tsc:*)",
       "Bash(./node_modules/.bin/tsc:*)",
       "Bash(npx --package=typescript tsc --noEmit)",
-      "Bash(realpath:*)"
+      "Bash(realpath:*)",
+      "Bash(./ngrok config:*)",
+      "Bash(./ngrok http 8080)",
+      "Bash(npx localtunnel:*)",
+      "Bash(./ngrok version)"
     ],
     "deny": [
       "Bash(sudo:*)",

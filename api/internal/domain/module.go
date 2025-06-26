@@ -10,6 +10,7 @@ import (
 	"github.com/sg3t41/api/internal/domain/service"
 	"github.com/sg3t41/api/pkg/config"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 var Module = fx.Module("domain",
@@ -25,6 +26,7 @@ var Module = fx.Module("domain",
 			fx.As(new(repository.TokenService)),
 		),
 		provideJWTConfig,
+		provideLineBotService,
 	),
 )
 
@@ -42,4 +44,8 @@ func provideJWTConfig(cfg *config.Config) (*entity.JWTConfig, error) {
 		RefreshTokenDuration: 30 * 24 * time.Hour, // 30 days
 		Issuer:               "utils-api",
 	}, nil
+}
+
+func provideLineBotService(cfg *config.Config, logger *zap.Logger) service.LineBotService {
+	return service.NewLineBotService(cfg, logger)
 }
