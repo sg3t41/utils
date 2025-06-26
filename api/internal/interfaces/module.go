@@ -18,6 +18,7 @@ var Module = fx.Module("interfaces",
 		handler.NewArticleHandler,
 		handler.NewUploadHandler,
 		handler.NewLineHandler,
+		handler.NewLinkHandler,
 		fx.Annotate(
 			handler.NewLineBotHandler,
 			fx.As(new(handler.LineBotHandler)),

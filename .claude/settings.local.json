@@ -251,7 +251,8 @@
       "Bash(./ngrok config:*)",
       "Bash(./ngrok http 8080)",
       "Bash(npx localtunnel:*)",
-      "Bash(./ngrok version)"
+      "Bash(./ngrok version)",
+      "Bash(gh repo view:*)"
     ],
     "deny": [
       "Bash(sudo:*)",

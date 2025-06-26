@@ -1,11 +1,18 @@
 package persistence
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/sg3t41/api/internal/domain/repository"
 )
+
+// NewSqlxDB sql.DBからsqlx.DBを作成
+func NewSqlxDB(db *sql.DB) *sqlx.DB {
+	return sqlx.NewDb(db, "postgres")
+}
 
 // 共通のクエリビルダー機能
 

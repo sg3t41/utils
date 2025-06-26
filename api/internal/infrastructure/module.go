@@ -16,6 +16,7 @@ var Module = fx.Module("infrastructure",
 		provideUserRepository,
 		provideAuthRepository,
 		provideArticleRepository,
+		provideLinkRepository,
 	),
 )
 
@@ -43,4 +44,12 @@ func provideArticleRepository(cfg *config.Config, db *sql.DB) repository.Article
 		panic("Memory article repository not implemented")
 	}
 	return persistence.NewPostgresArticleRepository(db)
+}
+
+func provideLinkRepository(cfg *config.Config, db *sql.DB) repository.LinkRepository {
+	if cfg.UseMemoryDB {
+		// TODO: Implement memory link repository if needed
+		panic("Memory link repository not implemented")
+	}
+	return persistence.NewPostgresLinkRepository(persistence.NewSqlxDB(db))
 }
