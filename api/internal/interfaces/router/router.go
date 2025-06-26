@@ -21,6 +21,7 @@ type Router struct {
 	uploadHandler      *handler.UploadHandler
 	lineHandler        *handler.LineHandler
 	lineBotHandler     handler.LineBotHandler
+	linkHandler        *handler.LinkHandler
 	authMiddleware     *middleware.AuthMiddleware
 	adminMiddleware    *middleware.AdminMiddleware
 	validationMiddleware *middleware.ValidationMiddleware
@@ -35,6 +36,7 @@ func NewRouter(
 	uploadHandler *handler.UploadHandler,
 	lineHandler *handler.LineHandler,
 	lineBotHandler handler.LineBotHandler,
+	linkHandler *handler.LinkHandler,
 	authMiddleware *middleware.AuthMiddleware,
 	adminMiddleware *middleware.AdminMiddleware,
 ) *Router {
@@ -57,6 +59,7 @@ func NewRouter(
 		uploadHandler:      uploadHandler,
 		lineHandler:        lineHandler,
 		lineBotHandler:     lineBotHandler,
+		linkHandler:        linkHandler,
 		authMiddleware:     authMiddleware,
 		adminMiddleware:    adminMiddleware,
 		validationMiddleware: validationMiddleware,
@@ -101,6 +104,23 @@ func (r *Router) SetupRoutes() {
 		lineBot := v1.Group("/linebot")
 		{
 			lineBot.POST("/webhook", r.lineBotHandler.Webhook)
+		}
+
+		// Link endpoints
+		links := v1.Group("/links")
+		{
+			// 公開エンドポイント（認証不要）
+			links.GET("", r.linkHandler.GetLinks)
+			links.GET("/:id", r.linkHandler.GetLink)
+			
+			// 管理エンドポイント（認証必要）
+			linksProtected := links.Use(r.authMiddleware.RequireAuth())
+			{
+				linksProtected.POST("", r.linkHandler.CreateLink)
+				linksProtected.PUT("/:id", r.linkHandler.UpdateLink)
+				linksProtected.DELETE("/:id", r.linkHandler.DeleteLink)
+				linksProtected.PATCH("/:id/order", r.linkHandler.UpdateLinkOrder)
+			}
 		}
 
 		// User endpoints
