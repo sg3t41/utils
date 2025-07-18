@@ -1,4 +1,3 @@
-docs/**
 .gitsecret/keys/random_seed
 .gitsecret/keys/pubring.kbx~
 .gitsecret/keys/private-keys-v1.d/
