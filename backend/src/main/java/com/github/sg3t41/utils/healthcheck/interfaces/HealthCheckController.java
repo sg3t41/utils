@@ -20,12 +20,8 @@ public class HealthCheckController {
 
 	@GetMapping("/api/health")
 	public ResponseEntity<HealthCheckDto> checkHealth() {
-		System.out.println("インターフェース層ログ: HealthCheckController.checkHealth() - 呼び出し。");
-		System.out.println("  > 本来の処理: リクエストのバリデーションを行い、入力DTOを作成してユースケースを呼び出す。");
-
 		HealthCheckDto outputData = healthCheckUsecase.execute();
 
-		System.out.println("  > 本来の処理: 出力DTOを元に、レスポンス(JSONなど)を生成して返す。");
 		if ("OK".equals(outputData.getStatus())) {
 			return ResponseEntity.ok(outputData);
 		} else {

@@ -26,9 +26,6 @@ public class HealthCheckUsecase {
 	 */
 	@Transactional(readOnly = true) // 読み取り専用のトランザクション
 	public HealthCheckDto execute() {
-		System.out.println("ユースケース層ログ: HealthCheckUsecase.execute() - 呼び出し。");
-		System.out.println("  > 本来の処理: ドメインオブジェクトやリポジトリを使い、一連のビジネスフローを実行する。");
-
 		// 1. リポジトリを呼び出して、インフラ層からデータを取得する
 		Health health = healthRepository.checkDatabaseHealth()
 				.orElse(Health.error("リポジトリが空の結果を返しました。"));

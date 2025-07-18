@@ -20,8 +20,6 @@ public class HealthRepositoryImpl implements HealthRepository {
 
 	@Override
 	public Optional<Health> checkDatabaseHealth() {
-		System.out.println("インフラ層ログ: HealthRepositoryImpl.checkDatabaseHealth() - 呼び出し。");
-		System.out.println("  > 本来の処理: データベースに接続し、状態を確認するクエリを実行する。");
 		try {
 			LocalDateTime dbTime = jdbcTemplate.queryForObject("SELECT NOW()", LocalDateTime.class);
 			System.out.println("  > 処理成功: データベース時刻を取得しました (" + dbTime + ")");
