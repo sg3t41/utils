@@ -1,12 +1,38 @@
 
-# Build stage
-FROM gradle:8.8.0-jdk21 AS build
-WORKDIR /home/gradle/project
-COPY . .
-RUN gradle build --no-daemon
+# ----------------------------------------------------------------
+# 1. Build Stage
+# ----------------------------------------------------------------
+# Gradle公式イメージを使用し、ビルド環境としてJDK 21を指定
+FROM gradle:8.9-jdk21 AS build
 
-# Package stage
-FROM eclipse-temurin:21-jre-jammy
+# 作業ディレクトリを設定
 WORKDIR /app
-COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
+
+# まずは依存関係定義ファイルのみをコピー
+# これにより、ソースコードの変更がない限り、依存関係のダウンロードはキャッシュされる
+COPY build.gradle.kts ./
+COPY gradle ./gradle
+
+# 依存関係をダウンロード
+RUN gradle dependencies --no-daemon
+
+# アプリケーションのソースコードをコピー
+COPY src ./src
+
+# アプリケーションをビルドする（テストはスキップ）
+RUN gradle build --no-daemon -x test
+
+# ----------------------------------------------------------------
+# 2. Package Stage
+# ----------------------------------------------------------------
+# 実行用に、より軽量なJREイメージを使用
+FROM eclipse-temurin:21-jre-jammy
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# ビルドステージから、ビルドされたJARファイルのみをコピー
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# アプリケーションの起動コマンド
 ENTRYPOINT ["java", "-jar", "app.jar"]
