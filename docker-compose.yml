@@ -33,9 +33,13 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL}
     container_name: my-nextjs-app
     ports:
       - "3000:3000"
+    env_file:
+      - ./frontend/.env
     depends_on:
       backend:
         condition: service_healthy

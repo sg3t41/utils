@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export default function HomePage() {
+export default function HealthCheckPage() {
   const [message, setMessage] = useState('読み込み中...');
 
   useEffect(() => {
@@ -18,12 +18,7 @@ export default function HomePage() {
       return;
     }
 
-    fetch(apiUrl, {
-      headers: {
-        // 'Authorization'ヘッダーに 'ApiKey {key}' の形式で設定
-        Authorization: `ApiKey ${apiKey}`,
-      },
-    })
+    fetch(apiUrl)
       .then((res) => {
         if (!res.ok) {
           // 認証エラーなどでレスポンスが成功でない場合
@@ -40,7 +35,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1>Next.js フロントエンド</h1>
+      <h1>HealthCheckページ</h1>
       <p>APIからの応答: {message}</p>
     </div>
   );
