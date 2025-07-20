@@ -1,4 +1,4 @@
-package com.github.sg3t41.utils.config;
+package com.github.sg3t41.utils.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

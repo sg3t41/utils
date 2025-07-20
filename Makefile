@@ -8,8 +8,8 @@ logs:
 
 test:
 	@echo "--- Running backend tests ---"
-	@docker build --target dev -t utils-backend-dev ./backend
-	@docker run --rm -w /app utils-backend-dev ./gradlew test
+	@docker build -t utils-backend-test ./backend
+	@docker run --rm -w /app utils-backend-test sh -c "chmod +x ./gradlew && ./gradlew test --rerun-tasks"
 
 build:
 	docker-compose build
